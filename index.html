@@ -201,7 +201,9 @@
   /* inset divider between the 헤더·메뉴 and 검색 groups */
   .cdivider[hidden] { display: none; }
   .cdivider { height: 1px; background: var(--ui-line); margin: 10px 0 8px; border: 0; }
-  .csub { margin: 10px 0 2px; font-size: 11.5px; font-weight: 600; color: var(--ui-sub); }
+  .csub { margin: 12px 0 4px; font-size: 11.5px; font-weight: 600; color: var(--ui-sub); }
+  /* a sub group after another one gets more room, so each reads as its own block */
+  .citem + .csub, .citem[hidden] + .csub { margin-top: 20px; }
   .csub[hidden] { display: none; }
   .checker {
     background-image: linear-gradient(45deg, #e4e4e7 25%, transparent 25%, transparent 75%, #e4e4e7 75%), linear-gradient(45deg, #e4e4e7 25%, transparent 25%, transparent 75%, #e4e4e7 75%);
@@ -1022,9 +1024,12 @@ const ITEMS = [
   { sub: '밝은 미디어 위' },
   { key: 'mediaLightBackground', token: 'header-on-media/light/background', label: '배경색', on: on({}, BOTH05), view: 'default', opts: { tone: 'light' } },
   { key: 'mediaLightNav', token: 'header-on-media/light/nav', label: '상단 메뉴·아이콘', labelBy: { A: '상단 메뉴' }, on: on({}, BOTH05), view: 'default', opts: { tone: 'light' } },
-  { group: '헤더', desc: '헤더 바에 쓰는 컬러예요. 배경색은 펼친 메뉴와 검색 화면에도 함께 적용돼요.' },
+  // desc may depend on the screen picked (C2) or the desktop header: the same token shows on several screens
+  { group: '헤더', desc: () => state.mode === 'screens' && state.screen !== 'default'
+      ? '기본 화면과 같은 컬러예요. 여기서 바꾸면 모든 화면에 함께 적용돼요.'
+      : '헤더 바에 쓰는 컬러예요. 배경색은 펼친 메뉴와 검색 화면에도 함께 적용돼요.' },
   { key: 'background', token: 'header/background', label: '배경색', on: ALL, view: 'default', opts: { solid: true }, screens: ['default', 'menu', 'search'] },
-  { key: 'nav', token: 'header/nav', label: '상단 메뉴·아이콘', labelBy: { A: '상단 메뉴' }, on: ALL, view: 'default', opts: { solid: true }, screens: ['default', 'menu'] },
+  { key: 'nav', token: 'header/nav', label: '상단 메뉴·아이콘', labelBy: { A: '상단 메뉴' }, on: ALL, view: 'default', opts: { solid: true }, screens: ['default', 'menu', 'search'] },
   { group: '펼친 메뉴', desc: '메뉴를 펼쳤을 때 쓰는 컬러예요.' },
   { key: 'menuNav', token: 'header-menu/nav', label: '메뉴 텍스트', on: ALL, view: 'menu' },
   { key: 'menuExpand', token: 'header-menu/expand-icon', label: '펼치기 아이콘 (+ / −)', on: on({ B: 'm', F: 'm' }, { B: 'm', F: 'm', I: 'm' }), view: 'menu', opts: { expand: true } },
@@ -1045,11 +1050,12 @@ const ITEMS = [
   { key: 'productName', token: 'header-search/product-name', label: '상품명', on: on({ A: 'pc', B: 'pc', F: 'pc' }), view: 'search' },
   { key: 'productPrice', token: 'header-search/product-price', label: '판매가', on: on({ A: 'pc', B: 'pc', F: 'pc' }), view: 'search' },
   { key: 'productPriceOriginal', token: 'header-search/product-price-original', label: '원가', on: on({ A: 'pc', B: 'pc', F: 'pc' }), view: 'search' },
-  { group: 'backdrop', desc: '메뉴를 펼쳤을 때 뒤쪽 화면을 덮는 컬러예요.' },
-  { key: 'backdrop', token: 'header-backdrop/default', label: '오버레이', on: on({ A: 'pc', B: 'pc', F: 'pc' }, { A: 'pc', B: 'pc', F: 'pc', I: 'both' }), view: 'menu' },
+  { group: 'backdrop', desc: () => state.desk === '05' ? '메뉴나 검색을 펼쳤을 때 뒤쪽 화면을 덮는 컬러예요.' : '메뉴를 펼쳤을 때 뒤쪽 화면을 덮는 컬러예요.' },
+  { key: 'backdrop', token: 'header-backdrop/default', label: '오버레이', on: on({ A: 'pc', B: 'pc', F: 'pc' }, { A: 'pc', B: 'pc', F: 'pc', I: 'both' }), view: 'menu', screensBy: { '05': ['menu', 'search'] } },
 ];
 // 화면별 보기: an item is listed on its own screen, plus wherever else Figma marks it (screens)
-const onScreen = (item, screen) => (item.screens || [item.view]).includes(screen);
+const onScreen = (item, screen) => ((item.screensBy && item.screensBy[state.desk]) || item.screens || [item.view]).includes(screen);
+const groupDesc = g => typeof g.desc === 'function' ? g.desc() : g.desc;
 const ITEM = Object.fromEntries(ITEMS.filter(i => i.key).map(i => [i.key, i]));
 const DEV_LABEL = { pc: 'PC', m: '모바일' };
 // items whose picker also offers a blur: [on, amount] fields in state.colors, and the picker's wording
@@ -1347,7 +1353,7 @@ function viewReleased() {
 /* ── Editor: colour items for the selected pairing ── */
 const itemsEl = document.getElementById('items');
 itemsEl.innerHTML = ITEMS.reduce((html, i) => {
-  if (i.group) return html + `${html ? '</div>' : ''}<div class="item-group ${i.cls || ''}"><h3>${i.group}</h3><p>${i.desc}</p>`;
+  if (i.group) return html + `${html ? '</div>' : ''}<div class="item-group ${i.cls || ''}" data-group="${ITEMS.indexOf(i)}"><h3>${i.group}</h3><p>${groupDesc(i)}</p>`;
   if (i.divider) return html + '<hr class="cdivider">';
   if (i.sub) return html + `<p class="csub">${i.sub}</p>`;
   return html + `<div class="citem" data-key="${i.key}">
@@ -1517,7 +1523,10 @@ function syncEditor() {
     dev.textContent = DEV_LABEL[on] || '';
   });
   // a group with nothing to edit for this pairing goes too
-  itemsEl.querySelectorAll('.item-group').forEach(g => { g.hidden = !g.querySelector('.citem:not([hidden])'); });
+  itemsEl.querySelectorAll('.item-group').forEach(g => {
+    g.hidden = !g.querySelector('.citem:not([hidden])');
+    g.querySelector(':scope > p').textContent = groupDesc(ITEMS[g.dataset.group]);
+  });
   // a sub heading only while an item under it is shown
   itemsEl.querySelectorAll('.csub').forEach(h => {
     let has = false;
