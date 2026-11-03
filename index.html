@@ -1375,10 +1375,10 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') dismissCoach
 // show the screen where the item's colour is used
 function autoShow(key) {
   const item = ITEM[key];
-  // C2 never changes the screen: it only shows the item's detail state on the screen already picked.
-  // 검색 has two states (비어 있음 · 입력 중), so every search item brings up the one its colour is used in.
+  // C2 never changes the screen, but brings the picked one back (hovering or clicking the preview may have
+  // closed it) in the item's detail state — e.g. 검색's 비어 있음 · 입력 중, the menu's 2depth.
   if (state.mode === 'screens') {
-    if (item.view === state.screen && (item.opts || item.view === 'search')) setView(state.screen, item.opts || {});
+    if (onScreen(item, state.screen)) setView(state.screen, item.view === state.screen ? item.opts || {} : {});
     return;
   }
   if (!document.getElementById('autoShow').checked) return;
