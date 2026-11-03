@@ -309,11 +309,11 @@
   /* 화면별 보기: pick the screen, the panel lists only its colours */
   .screen-seg { display: flex; gap: 2px; padding: 3px; border-radius: 8px; background: #e3e6ea; }
   .screen-seg[hidden] { display: none; }
-  .screen-seg button {
+  .screen-seg > button {
     min-width: 88px; border: 0; border-radius: 6px; padding: 9px 14px; background: transparent; cursor: pointer;
     font: 500 13px/1 Pretendard, sans-serif; color: var(--ui-sub); white-space: nowrap;
   }
-  .screen-seg button[aria-pressed="true"] { background: #fff; color: var(--ui-text); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .screen-seg > button[aria-pressed="true"] { background: #fff; color: var(--ui-text); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
   .screen-seg button:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 1px; }
   .auto-show[hidden] { display: none; }
   /* preview toolbar selects — Figma 180 × 42 dropdowns */
@@ -431,6 +431,10 @@
   }
   @keyframes coach-in { from { opacity: 0; transform: translateY(4px); } }
   @media (prefers-reduced-motion: reduce) { .coach { animation: none; } }
+  /* C2: the same tooltip, pointing up at the screen toggle */
+  .screen-seg { position: relative; }
+  .coach.below { top: calc(100% + 10px); bottom: auto; left: 50%; right: auto; margin-left: -130px; }
+  .coach.below::before { top: -5px; bottom: auto; left: 125px; right: auto; }
   .previews { display: flex; gap: 24px; align-items: flex-start; }
   .pane { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
   .pane.desktop, .pane.mobile { flex: none; }
@@ -454,7 +458,6 @@
   .scroller { position: absolute; inset: 0; overflow-y: auto; container-type: size; }
 
   /* ── 컬러 항목: one row per token, grouped like the Figma table ── */
-  .items-note { margin: 0 0 16px; }
   .item-group + .item-group { margin-top: 18px; }
   .item-group h3 { margin: 0; font-size: 12.5px; font-weight: 600; }
   .item-group > p { margin: 3px 0 8px; font-size: 11.5px; color: var(--ui-sub); line-height: 1.5; }
@@ -759,7 +762,6 @@
   <div class="depth-head"><button type="button" class="back-btn" data-back aria-label="뒤로"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M9.80667 4.47333C10.0667 4.73333 10.0667 5.15333 9.80667 5.41333L7.22 8L9.80667 10.5867C10.0667 10.8467 10.0667 11.2667 9.80667 11.5267C9.54667 11.7867 9.12667 11.7867 8.86667 11.5267L5.80667 8.46667C5.54667 8.20667 5.54667 7.78667 5.80667 7.52667L8.86667 4.46667C9.12 4.21333 9.54667 4.21333 9.80667 4.47333Z"/></svg></button><h2>컬러</h2></div>
 
   <section class="group">
-    <p class="hint items-note" id="itemsNote"></p>
     <div id="items"></div>
 
     <hr class="group-divider">
@@ -799,6 +801,10 @@
         <button type="button" data-screen="default" aria-pressed="true">기본</button>
         <button type="button" data-screen="menu" aria-pressed="false">메뉴 펼침</button>
         <button type="button" data-screen="search" aria-pressed="false">검색</button>
+        <div class="coach below" id="screenTip" role="status" hidden>
+          <p>화면을 고르면 해당 화면에 쓰이는 컬러를 수정할 수 있어요.</p>
+          <button type="button" class="coach-close" aria-label="안내 닫기">확인</button>
+        </div>
       </div>
     </div>
     <div class="previews" id="previews"></div>
@@ -1300,10 +1306,12 @@ itemsEl.innerHTML = ITEMS.reduce((html, i) => {
   </div>`;
 }, '') + '</div>';
 
+// one tooltip per prototype: C1 points at 자동 보기, C2 at the screen toggle
 const coach = document.getElementById('autoShowTip');
-const dismissCoach = () => { coach.hidden = true; };
-const showCoach = () => { coach.hidden = false; };
-coach.querySelector('.coach-close').addEventListener('click', dismissCoach);
+const screenTip = document.getElementById('screenTip');
+const dismissCoach = () => { coach.hidden = true; screenTip.hidden = true; };
+const showCoach = () => { (state.mode === 'auto' ? coach : screenTip).hidden = false; };
+document.querySelectorAll('.coach-close').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); dismissCoach(); }));
 document.getElementById('autoShow').addEventListener('change', dismissCoach);
 document.addEventListener('keydown', e => { if (e.key === 'Escape') dismissCoach(); });
 
@@ -1461,9 +1469,6 @@ function syncEditor() {
     hr.hidden = !has('previousElementSibling') || !has('nextElementSibling');
   });
   const screens = state.mode === 'screens';
-  document.getElementById('itemsNote').textContent = (screens
-    ? '미리보기 위에서 화면을 고르면 그 화면에 쓰이는 컬러만 보여요.'
-    : '항목을 누르면 그 컬러가 쓰이는 화면을 미리보기에서 보여줘요.') + ' PC · 모바일 표시가 있는 항목은 그 기기에만 적용돼요.';
   document.getElementById('autoShowWrap').hidden = screens;
   document.getElementById('screenSeg').hidden = !screens;
   document.querySelectorAll('#screenSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.screen === state.screen)));
@@ -1526,8 +1531,9 @@ document.querySelector('.version-switch').addEventListener('click', e => {
   setView(state.mode === 'screens' ? state.screen : 'default');
 });
 document.getElementById('screenSeg').addEventListener('click', e => {
-  const b = e.target.closest('button');
+  const b = e.target.closest('button[data-screen]');
   if (!b) return;
+  dismissCoach();
   state.screen = b.dataset.screen;
   closePicker(); syncEditor();
   setView(state.screen);
@@ -1546,7 +1552,7 @@ function openDepth(id, title) {
   document.querySelector('.editor').scrollTop = 0;
 }
 document.querySelectorAll('.menu-item').forEach(b => b.addEventListener('click', () => {
-  if (b.dataset.depth === 'color') { openDepth('depthColor'); if (state.mode === 'auto') showCoach(); }
+  if (b.dataset.depth === 'color') { openDepth('depthColor'); showCoach(); }
   else openDepth('depthOther', b.querySelector('span').textContent);
 }));
 document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', () => {
