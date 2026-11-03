@@ -463,6 +463,8 @@
 
   /* ── 컬러 항목: one row per token, grouped like the Figma table ── */
   .item-group + .item-group { margin-top: 18px; }
+  /* 헤더 겹침 sits apart from the rest: a full-bleed line under it */
+  .item-group.is-media::after { content: ""; display: block; height: 1px; margin: 18px -20px 0; background: var(--ui-line); }
   .item-group h3 { margin: 0; font-size: 12.5px; font-weight: 600; }
   .item-group > p { margin: 3px 0 8px; font-size: 11.5px; color: var(--ui-sub); line-height: 1.5; }
   .item-group[hidden], .citem[hidden] { display: none; }
@@ -675,6 +677,7 @@
 
   /* ── Set 05 / 06: the header can sit over the hero (header-on-media) ── */
   .frame.is-overlap .hdr { margin-bottom: calc(-1 * var(--hdr-h)); }
+  .hdr.on-media .hdr-logo { background: var(--logo-media-color); }
   .hdr.on-media .hdr-bar {
     background: var(--header-on-media-background); color: var(--header-on-media-nav);
     -webkit-backdrop-filter: none; backdrop-filter: none;
@@ -768,7 +771,6 @@
   <section class="group">
     <div id="items"></div>
 
-    <hr class="group-divider">
     <div class="logo-row">
       <span id="logoLabel">로고 컬러</span>
       <div class="seg logo-seg" id="logoSeg" role="group" aria-labelledby="logoLabel">
@@ -824,6 +826,7 @@
           <div class="pop-box" id="ovColors">
             <p class="pop-desc">배경에 맞는 컬러를 자동으로 적용하거나 직접 선택할 수 있어요.</p>
             <div class="pick-row"><span>일반 컬러</span><button type="button" class="pick" data-pick="tone" aria-haspopup="listbox"><b></b><svg class="caret" viewBox="0 0 14 14" aria-hidden="true"><path fill="currentColor" d="M9.26333 5.41917L7 7.6825L4.73667 5.41917C4.50917 5.19167 4.14167 5.19167 3.91417 5.41917C3.68667 5.64667 3.68667 6.01417 3.91417 6.24167L6.59167 8.91917C6.81917 9.14667 7.18667 9.14667 7.41417 8.91917L10.0917 6.24167C10.3192 6.01417 10.3192 5.64667 10.0917 5.41917C9.86417 5.1975 9.49083 5.19167 9.26333 5.41917Z"/></svg></button></div>
+            <div class="pick-row"><span>로고 컬러</span><button type="button" class="pick" data-pick="logo" aria-haspopup="listbox"><b></b><svg class="caret" viewBox="0 0 14 14" aria-hidden="true"><path fill="currentColor" d="M9.26333 5.41917L7 7.6825L4.73667 5.41917C4.50917 5.19167 4.14167 5.19167 3.91417 5.41917C3.68667 5.64667 3.68667 6.01417 3.91417 6.24167L6.59167 8.91917C6.81917 9.14667 7.18667 9.14667 7.41417 8.91917L10.0917 6.24167C10.3192 6.01417 10.3192 5.64667 10.0917 5.41917C9.86417 5.1975 9.49083 5.19167 9.26333 5.41917Z"/></svg></button></div>
           </div>
           <ul class="pick-menu" id="pickMenu" role="listbox" hidden></ul>
         </div>
@@ -1011,7 +1014,7 @@ const BOTH01 = { A: 'both', B: 'both', F: 'both' }, BOTH05 = { A: 'both', B: 'bo
 const ALL = on(BOTH01, BOTH05);
 const ITEMS = [
   // labelBy: a mobile-specific name — A's mobile header is text only (Menu · Bag), B · F · I use icons
-  { group: '헤더 겹침', desc: '헤더가 미디어 위에 겹쳐 있을 때 쓰는 컬러예요.' },
+  { group: '헤더 겹침', cls: 'is-media', desc: '헤더가 미디어 위에 겹쳐 있을 때 쓰는 컬러예요.' },
   // tone: the hero tone the colour is used on; the preview switches to a page with that hero
   { sub: '어두운 미디어 위' },
   { key: 'mediaDarkBackground', token: 'header-on-media/dark/background', label: '배경색', on: on({}, BOTH05), view: 'default', opts: { tone: 'dark' } },
@@ -1083,7 +1086,10 @@ const state = {
   page: 'home-dark',
   overlap: { 'home-dark': true, 'home-light': true, 'sub': false }, // 헤더 표시, per page
   tone: { 'home-dark': 'auto', 'home-light': 'auto', 'sub': 'auto' }, // 헤더 표시 › 일반 컬러: auto · dark · light
+  logoOv: { 'home-dark': 'auto', 'home-light': 'auto', 'sub': 'auto' }, // 헤더 표시 › 로고 컬러: auto · light · dark
 };
+// 로고 컬러 while overlapped: 자동 is 밝은 on a dark hero, 어두운 on a light one
+const mediaLogo = () => state.logoOv[state.page] !== 'auto' ? state.logoOv[state.page] : mediaTone() === 'dark' ? 'light' : 'dark';
 // which 미디어 위 colours the page uses: 자동 follows the hero tone
 const mediaTone = () => state.tone[state.page] !== 'auto' ? state.tone[state.page] : (PAGES[state.page].hero || {}).tone || 'dark';
 
@@ -1094,6 +1100,7 @@ function tokenVars() {
   const t = mediaTone() === 'light' ? 'Light' : 'Dark';
   vars['--header-on-media-background'] = c[`media${t}Background`];
   vars['--header-on-media-nav'] = c[`media${t}Nav`];
+  vars['--logo-media-color'] = mediaLogo() === 'light' ? '#ffffff' : '#1a1a1a';
   return vars;
 }
 
@@ -1339,7 +1346,7 @@ function viewReleased() {
 /* ── Editor: colour items for the selected pairing ── */
 const itemsEl = document.getElementById('items');
 itemsEl.innerHTML = ITEMS.reduce((html, i) => {
-  if (i.group) return html + `${html ? '</div>' : ''}<div class="item-group"><h3>${i.group}</h3><p>${i.desc}</p>`;
+  if (i.group) return html + `${html ? '</div>' : ''}<div class="item-group ${i.cls || ''}"><h3>${i.group}</h3><p>${i.desc}</p>`;
   if (i.divider) return html + '<hr class="cdivider">';
   if (i.sub) return html + `<p class="csub">${i.sub}</p>`;
   return html + `<div class="citem" data-key="${i.key}">
@@ -1609,32 +1616,40 @@ function syncDisplay() {
   badge.querySelector('b').textContent = !canOverlap() ? '겹칠 수 없음' : overlaps() ? '겹침' : '기본';
   document.getElementById('overlap').checked = !!state.overlap[state.page];
   document.getElementById('ovColors').classList.toggle('is-hidden', !state.overlap[state.page]);
-  document.querySelector('.pick[data-pick="tone"] b').textContent = TONES.find(([v]) => v === state.tone[state.page])[1];
+  document.querySelectorAll('.pick').forEach(b => {
+    const k = b.dataset.pick;
+    b.querySelector('b').textContent = PICKS[k].list.find(([v]) => v === state[PICKS[k].field][state.page])[1];
+  });
 }
 function setPopover(open) {
   displayPop.hidden = !open;
   displayBtn.setAttribute('aria-expanded', String(open));
   if (!open) pickMenu.hidden = true;
 }
-const TONES = [['auto', '자동'], ['dark', '어두운 미디어 위'], ['light', '밝은 미디어 위']];
+// per-page options in the popover: the state field each one writes, and its choices
+const PICKS = {
+  tone: { field: 'tone', list: [['auto', '자동'], ['dark', '어두운 미디어 위'], ['light', '밝은 미디어 위']] },
+  logo: { field: 'logoOv', list: [['auto', '자동'], ['light', '밝은'], ['dark', '어두운']] },
+};
 const pickMenu = document.getElementById('pickMenu');
-const tonePick = document.querySelector('.pick[data-pick="tone"]');
-tonePick.addEventListener('click', e => {
+let openPick = null;
+document.querySelectorAll('.pick').forEach(pick => pick.addEventListener('click', e => {
   e.stopPropagation();
-  if (!pickMenu.hidden) { pickMenu.hidden = true; return; }
-  const cur = state.tone[state.page];
-  pickMenu.innerHTML = TONES.map(([v, label]) =>
+  if (!pickMenu.hidden && openPick === pick.dataset.pick) { pickMenu.hidden = true; return; }
+  openPick = pick.dataset.pick;
+  const cur = state[PICKS[openPick].field][state.page];
+  pickMenu.innerHTML = PICKS[openPick].list.map(([v, label]) =>
     `<li role="option" data-v="${v}" aria-selected="${v === cur}">${label}<svg class="check" viewBox="0 0 18 18" aria-hidden="true"><path fill="currentColor" d="M6.75 12.1275L4.1475 9.525C3.855 9.2325 3.3825 9.2325 3.09 9.525C2.7975 9.8175 2.7975 10.29 3.09 10.5825L6.225 13.7175C6.5175 14.01 6.99 14.01 7.2825 13.7175L15.2175 5.7825C15.51 5.49 15.51 5.0175 15.2175 4.725C14.925 4.4325 14.4525 4.4325 14.16 4.725L6.75 12.1275Z"/></svg></li>`).join('');
   // drop the list just under the trigger, right-aligned to it
-  const pr = displayPop.getBoundingClientRect(), br = tonePick.getBoundingClientRect();
+  const pr = displayPop.getBoundingClientRect(), br = pick.getBoundingClientRect();
   pickMenu.style.top = (br.bottom - pr.top + 4) + 'px';
   pickMenu.style.right = (pr.right - br.right) + 'px';
   pickMenu.hidden = false;
-});
+}));
 pickMenu.addEventListener('click', e => {
   const li = e.target.closest('li');
   if (!li) return;
-  state.tone[state.page] = li.dataset.v;
+  state[PICKS[openPick].field][state.page] = li.dataset.v;
   pickMenu.hidden = true;
   syncDisplay(); renderAll();
 });
