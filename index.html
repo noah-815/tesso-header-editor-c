@@ -470,7 +470,6 @@
   .citem .tag { white-space: nowrap; font: 500 10.5px/1 Inter, sans-serif; color: var(--ui-sub); background: #f4f4f5; border-radius: 4px; padding: 3px 5px; }
   .group-divider { height: 1px; margin: 18px -20px 0; border: 0; background: var(--ui-line); }
   .logo-row > span { font-size: 12.5px; font-weight: 600; }
-  .logo-row[hidden] { display: none; }
   .set-thumb.pair { position: relative; }
   .set-count { display: block; margin-top: 4px; font-size: 11px; color: var(--ui-accent); font-weight: 600; }
 
@@ -673,7 +672,6 @@
     background: var(--header-on-media-background); color: var(--header-on-media-nav);
     -webkit-backdrop-filter: none; backdrop-filter: none;
   }
-  .hdr.on-media .hdr-logo { background: var(--logo-media-color); }
   /* set05_header: menu left, logo centred, utility right */
   .frame[data-desk="05"] .hdr-logo { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
   .frame[data-desk="05"] .d-nav { position: static; transform: none; margin-left: -8px; gap: 4px; }
@@ -768,13 +766,6 @@
     <div class="logo-row">
       <span id="logoLabel">로고 컬러</span>
       <div class="seg logo-seg" id="logoSeg" role="group" aria-labelledby="logoLabel">
-        <button type="button" data-logo="light">밝은</button>
-        <button type="button" data-logo="dark">어두운</button>
-      </div>
-    </div>
-    <div class="logo-row" id="logoMediaRow" hidden>
-      <span id="logoMediaLabel">로고 컬러 (미디어 위)</span>
-      <div class="seg logo-seg" id="logoMediaSeg" role="group" aria-labelledby="logoMediaLabel">
         <button type="button" data-logo="light">밝은</button>
         <button type="button" data-logo="dark">어두운</button>
       </div>
@@ -992,7 +983,7 @@ const BOTH01 = { A: 'both', B: 'both', F: 'both' }, BOTH05 = { A: 'both', B: 'bo
 const ALL = on(BOTH01, BOTH05);
 const ITEMS = [
   // labelBy: a mobile-specific name — A's mobile header is text only (Menu · Bag), B · F · I use icons
-  { group: '헤더 겹침', desc: '헤더가 미디어 위에 겹쳐 있을 때 쓰는 컬러예요. 호버·스크롤 시에는 헤더 컬러가 적용돼요.' },
+  { group: '헤더 겹침', desc: '헤더가 미디어 위에 겹쳐 있을 때 쓰는 컬러예요.' },
   { key: 'mediaBackground', token: 'header-on-media/background', label: '배경색 (미디어 위)', on: on({}, BOTH05), view: 'default', opts: { media: true } },
   { key: 'mediaNav', token: 'header-on-media/nav', label: '상단 메뉴·아이콘 (미디어 위)', labelBy: { A: '상단 메뉴 (미디어 위)' }, on: on({}, BOTH05), view: 'default', opts: { media: true } },
   { group: '헤더', desc: '헤더 바에 쓰는 컬러예요. 배경색은 펼친 메뉴와 검색 화면에도 함께 적용돼요.' },
@@ -1052,7 +1043,6 @@ const state = {
   set: 'A',                         // its mobile pairing
   colors: { ...DEFAULT_COLORS },
   logo: 'dark',                     // 로고 컬러: 'light' | 'dark'
-  logoMedia: 'light',               // 로고 컬러 (미디어 위), Set 05 / 06 only
   view: 'default',                  // preview state: default / scroll / menu / search
   mode: 'screens',                  // prototype: 'screens' C2 화면별 보기 (default) · 'auto' C1 자동 보기
   screen: 'default',                // C2: the screen picked in the preview
@@ -1061,7 +1051,7 @@ const state = {
 
 function tokenVars() {
   const c = state.colors;
-  const vars = { '--logo-color': state.logo === 'light' ? '#ffffff' : '#1a1a1a', '--logo-media-color': state.logoMedia === 'light' ? '#ffffff' : '#1a1a1a', '--header-blur': (c.blurOn ? c.blur : 0) + 'px', '--backdrop-blur': (c.backdropBlurOn ? c.backdropBlur : 0) + 'px' };
+  const vars = { '--logo-color': state.logo === 'light' ? '#ffffff' : '#1a1a1a', '--header-blur': (c.blurOn ? c.blur : 0) + 'px', '--backdrop-blur': (c.backdropBlurOn ? c.backdropBlur : 0) + 'px' };
   for (const item of Object.values(ITEM)) vars['--' + item.token.replace('/default', '').replace('/', '-')] = c[item.key];
   return vars;
 }
@@ -1484,20 +1474,12 @@ function syncEditor() {
     tag.textContent = `블러 ${c[bk.px]}`;
   }
   document.querySelectorAll('#logoSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.logo === state.logo)));
-  document.getElementById('logoMediaRow').hidden = !DESKS[state.desk].overlap;
-  document.querySelectorAll('#logoMediaSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.logo === state.logoMedia)));
 }
 
 document.getElementById('logoSeg').addEventListener('click', e => {
   const b = e.target.closest('button');
   if (!b) return;
   state.logo = b.dataset.logo;
-  closePicker(); syncEditor(); renderAll();
-});
-document.getElementById('logoMediaSeg').addEventListener('click', e => {
-  const b = e.target.closest('button');
-  if (!b) return;
-  state.logoMedia = b.dataset.logo;
   closePicker(); syncEditor(); renderAll();
 });
 
