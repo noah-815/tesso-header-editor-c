@@ -525,7 +525,7 @@
     opacity: 0; visibility: hidden; transition: opacity .2s ease, visibility 0s linear .2s, background-color .25s ease;
   }
   .dd a { padding: 6px 16px 6px 8px; color: inherit; text-decoration: none; text-transform: capitalize; }
-  .dd a:hover { text-decoration: underline; text-underline-offset: 2px; }
+  .dd a:hover, .dd.show-hover a:nth-child(4) { color: var(--header-menu-nav-hover); }
   .hdr.is-open .dd { opacity: 1; visibility: visible; transition: opacity .2s ease, visibility 0s, background-color .25s ease; }
   .dim {
     position: absolute; left: 0; right: 0; bottom: 0; top: var(--hdr-h); z-index: 2; background: var(--header-backdrop);
@@ -1033,6 +1033,7 @@ const ITEMS = [
   { key: 'nav', token: 'header/nav', label: '상단 메뉴·아이콘', labelBy: { A: '상단 메뉴' }, on: ALL, view: 'default', opts: { solid: true }, screens: ['default', 'menu', 'search'] },
   { group: '펼친 메뉴', desc: '메뉴를 펼쳤을 때 쓰는 컬러예요.' },
   { key: 'menuNav', token: 'header-menu/nav', label: '메뉴 텍스트', on: ALL, view: 'menu' },
+  { key: 'menuNavHover', token: 'header-menu/nav-hover', label: '메뉴 텍스트 - 호버', on: on({ A: 'pc', B: 'pc', F: 'pc' }, { A: 'pc', B: 'pc', F: 'pc', I: 'pc' }), view: 'menu', opts: { hover: true } },
   { key: 'menuExpand', token: 'header-menu/expand-icon', label: '펼치기 아이콘 (+ / −)', on: on({ B: 'm', F: 'm' }, { B: 'm', F: 'm', I: 'm' }), view: 'menu', opts: { expand: true } },
   { key: 'menuBack', token: 'header-menu/back', label: '뒤로가기 버튼', on: on({ A: 'm' }, { A: 'm' }), view: 'menu', opts: { depth2: true } },
   { key: 'menuUtility', token: 'header-menu/utility', label: '유틸리티 (로그인·마이페이지)', on: on({ A: 'm', B: 'm', F: 'm' }, { A: 'm', B: 'm', F: 'm', I: 'm' }), view: 'menu' },
@@ -1074,7 +1075,7 @@ const overlaps = () => canOverlap() && state.overlap[state.page];
 const DEFAULT_COLORS = {
   mediaDarkBackground: '#ffffff00', mediaDarkNav: '#ffffff', mediaLightBackground: '#ffffff00', mediaLightNav: '#1a1a1a',
   background: '#ffffff', nav: '#1a1a1a',
-  menuNav: '#1a1a1a', menuUtility: '#5e5b57', menuBack: '#5e5b57', menuExpand: '#1a1a1a',
+  menuNav: '#1a1a1a', menuNavHover: '#97938d', menuUtility: '#5e5b57', menuBack: '#5e5b57', menuExpand: '#1a1a1a',
   borderInactive: '#e4e1dc', borderActive: '#97938d', placeholder: '#97938d', input: '#1a1a1a', cursor: '#1a1a1a',
   searchIcon: '#1a1a1a', resultLabel: '#5e5b57', result: '#1a1a1a', resultLink: '#1a1a1a',
   productName: '#1a1a1a', productPrice: '#1a1a1a', productPriceOriginal: '#97938d',
@@ -1241,6 +1242,7 @@ function createDesktop() {
       scroller.scrollTop = view === 'scroll' ? SCROLL_Y : 0;
       local.scrolled = scroller.scrollTop > 0;
       if (view === 'menu') local.open = true;
+      shop.querySelector('.dd').classList.toggle('show-hover', !!opts.hover);
       if (view === 'search') { local.search = true; local.caret = !opts.empty; }
       input.value = view === 'search' && !opts.empty ? 'Product' : '';
       render();
