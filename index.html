@@ -672,8 +672,8 @@
   <span class="divider" aria-hidden="true"></span>
   <button type="button" class="text-btn" id="openDesigns" aria-haspopup="dialog"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M13.0563 13.5394C12.9787 13.2496 13.2936 12.9934 13.5828 13.1113L18.2476 15.0164C18.5288 15.1312 18.4904 15.5216 18.1898 15.6024L16.0365 16.1794C15.9595 16.2 15.8876 16.2363 15.8265 16.286C15.7653 16.3357 15.7158 16.3975 15.6825 16.4666L14.8971 18.0926C14.7639 18.3686 14.3438 18.3442 14.2664 18.056L13.0563 13.5394ZM17.5868 3.34001C18.0069 3.38278 18.3346 3.73787 18.3346 4.16927V14.2547L17.0016 13.7111V11.4748H3.00098V15.3363H12.7406L13.0978 16.6693H2.5013C2.04107 16.6693 1.66797 16.2962 1.66797 15.8359V4.16927C1.66797 3.70903 2.04106 3.33594 2.5013 3.33594H17.5013L17.5868 3.34001ZM3.00098 10.1418H17.0016V4.66895H3.00098V10.1418ZM6.37744 5.54867C6.74563 5.54867 7.04395 5.84698 7.04395 6.21517C7.04373 6.58317 6.7455 6.88167 6.37744 6.88167H4.52848C4.16043 6.88167 3.8622 6.58317 3.86198 6.21517C3.86198 5.84698 4.16029 5.54867 4.52848 5.54867H6.37744Z"/></svg>다른 헤더 디자인 보기</button>
   <div class="version-switch" role="group" aria-label="비교 버전">
-    <button type="button" data-mode="screens" aria-pressed="false">C2 · 화면별 보기</button>
-    <button type="button" data-mode="auto" aria-pressed="true">C1 · 자동 보기</button>
+    <button type="button" data-mode="screens" aria-pressed="true">C2 · 화면별 보기</button>
+    <button type="button" data-mode="auto" aria-pressed="false">C1 · 자동 보기</button>
   </div>
   <div class="actions">
     <button type="button" class="btn secondary">종료</button>
@@ -974,7 +974,7 @@ const state = {
   colors: { ...DEFAULT_COLORS },
   logo: 'dark',                     // 로고 컬러: 'light' | 'dark'
   view: 'default',                  // preview state: default / scroll / menu / search
-  mode: 'auto',                     // prototype: 'auto' C1 자동 보기 · 'screens' C2 화면별 보기
+  mode: 'screens',                  // prototype: 'screens' C2 화면별 보기 (default) · 'auto' C1 자동 보기
   screen: 'default',                // C2: the screen picked in the preview
   page: 'home-dark',
 };
