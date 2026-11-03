@@ -702,6 +702,7 @@
   .frame[data-desk="05"] .res-link, .frame[data-desk="05"] .d-grid { display: none; }
   .d-list { display: none; margin: 14px 0 0; padding: 0; list-style: none; color: var(--header-search-result); }
   .d-list li { padding: 6px 0; }
+  .d-list li:hover, .d-list.show-hover li:nth-child(3) { color: var(--header-search-result-hover); }
   .frame[data-desk="05"] .d-list { display: block; }
 
   /* mobileI: hamburger left, logo centred, search · bag right; the menu is a drawer over a dimmed page */
@@ -1048,6 +1049,7 @@ const ITEMS = [
   { sub: '검색 결과' },
   { key: 'resultLabel', token: 'header-search/result-label', label: '"검색 결과" 라벨', on: on({ A: 'pc', B: 'both', F: 'both' }, { A: 'pc', B: 'both', F: 'both', I: 'both' }), view: 'search' },
   { key: 'result', token: 'header-search/result', label: '검색 결과 텍스트', on: on({ B: 'm', F: 'm' }, { A: 'pc', B: 'both', F: 'both', I: 'both' }), view: 'search' },
+  { key: 'resultHover', token: 'header-search/result-hover', label: '검색 결과 텍스트 - 호버', on: on({}, { A: 'pc', B: 'pc', F: 'pc', I: 'pc' }), view: 'search', opts: { hover: true } },
   { key: 'resultLink', token: 'header-search/result-link', label: '전체보기 버튼', on: on({ A: 'pc', B: 'pc', F: 'pc' }), view: 'search' },
   { key: 'productName', token: 'header-search/product-name', label: '상품명', on: on({ A: 'pc', B: 'pc', F: 'pc' }), view: 'search' },
   { key: 'productPrice', token: 'header-search/product-price', label: '판매가', on: on({ A: 'pc', B: 'pc', F: 'pc' }), view: 'search' },
@@ -1077,7 +1079,7 @@ const DEFAULT_COLORS = {
   background: '#ffffff', nav: '#1a1a1a',
   menuNav: '#1a1a1a', menuNavHover: '#97938d', menuUtility: '#5e5b57', menuBack: '#5e5b57', menuExpand: '#1a1a1a',
   borderInactive: '#e4e1dc', borderActive: '#97938d', placeholder: '#97938d', input: '#1a1a1a', cursor: '#1a1a1a',
-  searchIcon: '#1a1a1a', resultLabel: '#5e5b57', result: '#1a1a1a', resultLink: '#1a1a1a',
+  searchIcon: '#1a1a1a', resultLabel: '#5e5b57', result: '#1a1a1a', resultHover: '#97938d', resultLink: '#1a1a1a',
   productName: '#1a1a1a', productPrice: '#1a1a1a', productPriceOriginal: '#97938d',
   backdrop: '#0f0e0d59',
   blurOn: false, blur: 8,                 // 배경색 blur
@@ -1242,7 +1244,8 @@ function createDesktop() {
       scroller.scrollTop = view === 'scroll' ? SCROLL_Y : 0;
       local.scrolled = scroller.scrollTop > 0;
       if (view === 'menu') local.open = true;
-      shop.querySelector('.dd').classList.toggle('show-hover', !!opts.hover);
+      shop.querySelector('.dd').classList.toggle('show-hover', view === 'menu' && !!opts.hover);
+      hdr.querySelector('.d-list').classList.toggle('show-hover', view === 'search' && !!opts.hover);
       if (view === 'search') { local.search = true; local.caret = !opts.empty; }
       input.value = view === 'search' && !opts.empty ? 'Product' : '';
       render();
