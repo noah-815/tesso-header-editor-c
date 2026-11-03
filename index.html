@@ -921,9 +921,10 @@ const PAIRS = {
 const ALL = { A: 'both', B: 'both', F: 'both' };
 const PC = { A: 'pc', B: 'pc', F: 'pc' };
 const ITEMS = [
+  // labelBy: a pairing-specific name — A's mobile header is text only (Menu · Bag), B · F use icons
   { group: '헤더', desc: '헤더 바에 쓰는 컬러예요. 배경색은 펼친 메뉴와 검색 화면에도 함께 적용돼요.' },
   { key: 'background', token: 'header/background', label: '배경색', on: ALL, view: 'default', screens: ['default', 'menu', 'search'] },
-  { key: 'nav', token: 'header/nav', label: '상단 메뉴·아이콘', on: ALL, view: 'default', screens: ['default', 'menu'] },
+  { key: 'nav', token: 'header/nav', label: '상단 메뉴·아이콘', labelBy: { A: '상단 메뉴' }, on: ALL, view: 'default', screens: ['default', 'menu'] },
   { group: '펼친 메뉴', desc: '메뉴를 펼쳤을 때 안쪽에 쓰는 컬러예요.' },
   { key: 'menuNav', token: 'header-menu/nav', label: '메뉴 텍스트', on: ALL, view: 'menu' },
   { key: 'menuExpand', token: 'header-menu/expand-icon', label: '펼치기 아이콘 (+ / −)', on: { B: 'm', F: 'm' }, view: 'menu', opts: { expand: true } },
@@ -1358,6 +1359,7 @@ function syncEditor() {
   itemsEl.querySelectorAll('.citem').forEach(row => {
     const item = ITEM[row.dataset.key], on = item.on[pair];
     row.hidden = !on || (state.mode === 'screens' && !onScreen(item, state.screen));
+    row.querySelector('label').firstChild.textContent = (item.labelBy && item.labelBy[pair]) || item.label;
     row.querySelector('.swatch i').style.setProperty('--v', c[row.dataset.key]);
     const dev = row.querySelector('.dev');
     dev.hidden = !on || on === 'both';
