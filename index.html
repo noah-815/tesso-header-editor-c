@@ -1,0 +1,1470 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Header Editor C</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  /* ── Editor chrome ─────────────────────────────── */
+  :root {
+    --ui-bg: #f3f3f4;
+    --ui-panel: #ffffff;
+    --ui-line: #e4e4e7;
+    --ui-text: #18181b;
+    --ui-sub: #71717a;
+    --ui-accent: #2563eb;
+    --ui-accent-soft: #eff4ff;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: Pretendard, -apple-system, sans-serif;
+    background: var(--ui-bg);
+    color: var(--ui-text);
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+    overflow: hidden;
+  }
+
+  .editor {
+    background: var(--ui-panel);
+    border-right: 1px solid #e3e3e3;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  /* top bar — Figma "top" (17465:33199) */
+  .topbar {
+    grid-column: 1 / -1;
+    display: flex; align-items: center; height: 57px; padding: 6px 12px 6px 24px;
+    background: #fff; border-bottom: 1px solid rgba(51,62,76,.1);
+  }
+  .topbar h1 { margin: 0; font: 700 16px/24px Pretendard, sans-serif; color: #000; white-space: nowrap; }
+  .topbar .divider { width: 1px; height: 20px; background: rgba(51,62,76,.16); margin: 0 4px 0 24px; }
+  .text-btn {
+    display: flex; align-items: center; gap: 4px; height: 40px; padding: 8px 12px 8px 8px; border-radius: 8px;
+    border: 0; background: transparent; cursor: pointer; color: #000;
+    font: 600 14px/20px Pretendard, sans-serif;
+  }
+  .text-btn { white-space: nowrap; flex: none; }
+  .text-btn:hover { background: rgba(24,29,37,.06); }
+  .text-btn:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 1px; }
+  /* prototype-only: switch between the two overlap placements */
+  /* colour-menu controls in the preview toolbar only show while the 컬러 depth is open */
+  body:not([data-depth="depthColor"]) [data-in-color] { display: none !important; }
+  /* prototype-only: compare the two ways of showing what is being edited */
+  .version-switch { display: flex; gap: 2px; margin-left: 20px; padding: 3px; border-radius: 8px; background: #f1f2f4; }
+  .version-switch button {
+    border: 0; border-radius: 6px; padding: 6px 12px; background: transparent; cursor: pointer;
+    font: 500 12.5px/1 Pretendard, sans-serif; color: var(--ui-sub); white-space: nowrap;
+  }
+  .version-switch button[aria-pressed="true"] { background: #1b4efe; color: #fff; }
+  .version-switch button:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 1px; }
+  .topbar .actions { margin-left: auto; display: flex; gap: 12px; padding-right: 2px; }
+  .btn {
+    width: 90px; height: 40px; border-radius: 4px; cursor: pointer;
+    font: 500 14px/1 Inter, Pretendard, sans-serif;
+  }
+  .btn.secondary { background: #fff; color: #000; border: 1px solid #d8d8d8; }
+  .btn.primary { background: #000; color: #fff; border: 1px solid #000; }
+  .btn:disabled { opacity: .35; cursor: not-allowed; }
+
+  /* header design dialog */
+  .design-dialog {
+    width: min(640px, calc(100vw - 32px)); padding: 0; border: 0; border-radius: 12px;
+    box-shadow: 0 24px 64px rgba(0,0,0,.2); color: var(--ui-text);
+  }
+  .design-dialog::backdrop { background: rgba(15,14,13,.45); }
+  .dlg-head { padding: 20px 24px 4px; }
+  .dlg-head h2 { margin: 0; font: 700 16px/24px Pretendard, sans-serif; }
+  .dlg-head p { margin: 2px 0 0; font-size: 12.5px; color: var(--ui-sub); }
+  .dlg-body { padding: 16px 24px 20px; max-height: 68vh; overflow-y: auto; }
+  .set-group + .set-group { margin-top: 20px; }
+  .set-group h3 { margin: 0 0 10px; font-size: 13px; font-weight: 600; }
+  .dlg-body .sets { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .dlg-body .set { padding: 10px; border-radius: 10px; }
+  .dlg-body .set-thumb { height: 72px; border-radius: 6px; padding: 0 10px; gap: 5px; align-items: flex-start; padding-top: 12px; }
+  .dlg-body .set-thumb.inset { padding: 8px; }
+  .dlg-body .set-thumb.inset > div { height: 22px; flex: 1; }
+  .dlg-body .set-thumb i { width: 14px; height: 4px; }
+  .dlg-body .set-thumb b { width: 24px; height: 5px; top: 12px; }
+  .dlg-body .set-thumb.inset b { top: 8px; }
+  .dlg-body .set span { font-size: 12.5px; margin-top: 8px; color: var(--ui-text); font-weight: 600; }
+  .dlg-body .set small { display: block; font-size: 11.5px; color: var(--ui-sub); margin-top: 2px; line-height: 1.4; white-space: normal; }
+  .dlg-body .set[aria-pressed="true"] span { color: var(--ui-accent); }
+  .dlg-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 24px 20px; }
+
+
+  .group { padding: 18px 20px; }
+  .group[hidden] { display: none; }
+  .color-tabs { position: sticky; top: 0; z-index: 6; display: grid; grid-template-columns: 1fr 1fr; background: var(--ui-panel); border-bottom: 1px solid var(--ui-line); }
+  .color-tabs button {
+    position: relative; height: 44px; padding: 0; border: 0; background: none; cursor: pointer;
+    font: 500 13px/1 Pretendard, sans-serif; color: var(--ui-sub);
+  }
+  .color-tabs button:hover { color: var(--ui-text); }
+  .color-tabs button[aria-selected="true"] { color: var(--ui-text); font-weight: 600; }
+  .color-tabs button[aria-selected="true"]::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--ui-text); }
+  .color-tabs button:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: -2px; border-radius: 4px; }
+  .group-title {
+    font-size: 12px; font-weight: 600; margin: 0 0 10px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .hint { font-size: 11.5px; color: var(--ui-sub); line-height: 1.5; margin: 8px 0 0; }
+  .hint.warn { color: #b45309; }
+  .hint code { font-family: Inter, sans-serif; font-size: 10.5px; background: #f4f4f5; padding: 0 4px; border-radius: 3px; }
+  .sub { margin-top: 14px; }
+  .sub-label { font-size: 11.5px; color: var(--ui-sub); margin: 0 0 6px; }
+  :root {
+    --logo: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIcAAAAeCAYAAAAGjg2BAAAACXBIWXMAABYlAAAWJQFJUiTwAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAABeNJREFUeAHNW9t12zgQHe3J/7qDQBWsUkHgCqJUsHQFsSuwXMEqFZipIHEF4lZgpwKxgygVIBgRdCToDokXFd1zYCd4zBDAYF6AycTjhy3Ptny1paJA2L4bE49XPrZcUQFYOusBfktKgDC3aFp2jBK+S0X0lXC0b4gm+qBcbE2AkJg04fD53FMmHB0JG0qAMDfejCiBNtMKB8KjGRCSvygfyhZmkr1xAXxWppP8JC1ix2lHR8LCFNJQFkznkS4blS1bae9KCEcP3rhbmh6srv+jNPw70s4bWlE5LM+0JrngvXv2D8aMdQvo/GBLKxDStrwnfAJ3tsxns9nOb3AqW3vV32x5AnSUKxIfxrXl01AE7DdsaVhzMBpL95ri6KK59eC1eGdptjROR9lfW9A098cP9P3seB7iLXWCv6Dh+R/PXbBFmkYm4SQteKzBdnlFI+A+Ap8o/4C/y4Qj1lfYjNAL+lZTxudQATzqgW991XRJZsVJ8UehWVNBWF4r++sL4hO5icik1LY0oL6istDmQswL750tlf0na4gd6HLfr2uyz+EE5AU0lXLoDlEL9ZrCgUJLFrr/Qf0HKo97ExI+ngnOJKMDzvu3F+Rch3QXWJcFNxFEN0gQTRdq+31bR7cGQ/QEG8n8v9IFwc0faeVP/CNXOBSoe6FpsAvkj4A0QcM/nAZsQHtFeeBF97+ZQ+XUSGsqrEHdlf1OnSwcdjBLl/Kq+TR+o2mgQF1LI3AaQDIpPVDENBb2jqGlLurzcWtGHP5zwu4XH2Z0oBfRwsHOihMMJHF3NAGMnIFtaRwajfPC4Br0UbmbaHnwGjWg6dGUS7aVwHdQ988boTM7T+jk8IQ0ndpvVp8fY/MOIXAnH2XwdoH80Dyaw/9wXsby4Trt9VsS3twY3NjyTMdrpqib0ySHKQGsOfx1WkjCoSmcKKvnGiW+cuCEgj+YPWd0ykbNl6OhQRNywp5A355/Mtinsd/BAuI7o2xenqY4UAmAzn6uQ8oZN17AT4ne/b2UiaEu+7ciLBgtYXvuQ6OxwobUoO6qhH/g/LDPoOnSzMsRStytsICsbNnYiS7oPLgLSUeTC8k8NKij03yoDTmzKVjRqY+k6IIv5yTh4OTIHJR31GXWkFpWNL2AtNTdqYSaFPQtXwaGwailxOl2wncDmi7hcg5qZ8nn2I2czMZ09yJ8Z6A8Jmxb51QeNXUaI9S3kRZcmYhHSvT7wqqhTLA5s7zZvPgajc3rVCmAEChQ9/MNJeLA0fIvlfYhYKCjJd3KcqLIl2YV6fRKKfAUNc6RRUNlsKLu29RBXf/244b+DN6Dupdk4WC4k8ARi6++Q0PA75ZG7VcK4asOFToz/qgnFvtHQCUiMhc2s9l+9po04ZB9UgyY36aEQ4oSKH9THtYk3BhSGHKzmz6KPgJyWUmU46jo/EBruo/oSgjHW1CnKAPuhKLQTwf6CxrUMc02sCDBLHpTO5A9PRtc8FCBpqbvgKApjLj04GQN+m5Av9UAbc4xbMGY7VD0YORHPZoCwdGDQONK6L+JmdvBOF6/H2YcShgb1FfgvTDyY+s9jZyLtz4yQci+mXXaAyW6FA1nLZFJaSMzkbVQX1FBuIgwJJlXDKY7dGxK2OdRoMtDH6lKDulyRALZu2WnU8peFgnL2Fk13R2P9po4I7sWHESUtGoojq9018KmZU0FwebF8vpA5V7QsdZD68Lmf0HY+ezx4l7edTDlAU+1SVe9kplYgb5Loa+mSBjZtCgqNLeD8WPmRQljSuLk9XnJP01gPDhHqxicOWhAE7rPKWFSetRCfUWF4dT4n8pxMNj5v/Y1cSnhYKJ3RyqpLJBdZil/DcOc1GeblB4Ddy2lw+Sen3Q5NyUa6oTiFpnoHOFoqfMtOF6fl9YYhxjQHpX5bTKWwvChu5QxwL+pMdO95FpR2AOmVLTUrSMfNhaKwb/9mZmEq/bAG9EjuJN98kgoNOsojH+lIbWnfKvHV0k8R74teG4evxNa0hxi9i5lHX4Bgpi/3lEQ4j0AAAAASUVORK5CYII=);
+  }
+  /* 미디어 위 컬러: one row per tone — 배경 · 전경 colour, 밝은/어두운 로고 */
+  .logo-row { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; font-size: 12px; }
+  .logo-row > span { font-size: 12.5px; font-weight: 600; }
+  .text-link { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+  .text-link:hover { color: var(--ui-text); }
+  .tones { display: grid; grid-template-columns: 1fr 28px 28px auto; align-items: center; gap: 8px 10px; margin-top: 12px; }
+  .tones.is-hidden { display: none; }
+  /* the per-tone logo column is C안 only; A안 picks 로고 컬러 once below */
+  .tones-head { display: contents; font-size: 11px; color: var(--ui-sub); }
+  .tones-head span { text-align: center; }
+  .tone-name { font-size: 12px; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .swatch.has-blur::after { content: ""; position: absolute; right: 2px; top: 2px; width: 6px; height: 6px; border-radius: 50%; background: var(--ui-accent); box-shadow: 0 0 0 1.5px #fff; }
+  /* 밝은 로고 / 어두운 로고: compact segmented control */
+  .seg.logo-seg { padding: 2px; flex: none; }
+  .seg.logo-seg button { flex: none; padding: 5px 8px; font-size: 11.5px; white-space: nowrap; }
+  .is-hidden { display: none !important; }
+
+  /* header set thumbnails */
+  .sets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .set {
+    border: 1px solid var(--ui-line); border-radius: 8px; background: #fff;
+    padding: 6px; cursor: pointer; text-align: left; font: inherit;
+  }
+  .set:disabled { cursor: not-allowed; opacity: .45; }
+  .set[aria-pressed="true"] { border-color: var(--ui-accent); box-shadow: 0 0 0 1px var(--ui-accent); }
+  .set-thumb {
+    height: 26px; border-radius: 4px; background: #f4f4f5;
+    display: flex; align-items: center; padding: 0 5px; gap: 3px; position: relative;
+  }
+  .set-thumb i { display: block; height: 3px; width: 8px; background: #a1a1aa; border-radius: 1px; }
+  .set-thumb b { position: absolute; left: 50%; transform: translateX(-50%); width: 14px; height: 4px; background: #3f3f46; border-radius: 1px; }
+  .set-thumb .r { margin-left: auto; }
+  .set-thumb em { position: absolute; top: 0; bottom: 0; left: 0; background: #3f3f46; }
+  .set-thumb em.drawer { width: 34%; }
+  .set-thumb em.full { right: 0; }
+  .set-thumb.inset { background: #d4d4d8; padding: 4px; }
+  .set-thumb.inset > div { flex: 1; height: 100%; background: #fff; border-radius: 2px; display: flex; align-items: center; padding: 0 4px; gap: 3px; position: relative; }
+  .set span { display: block; font-size: 11px; margin-top: 5px; color: var(--ui-sub); white-space: nowrap; }
+  .set[aria-pressed="true"] span { color: var(--ui-accent); font-weight: 600; }
+
+  /* switch */
+  .switch { position: relative; width: 34px; height: 20px; flex: none; }
+  .switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+  .switch span {
+    position: absolute; inset: 0; border-radius: 999px; background: #d4d4d8; transition: background .15s;
+    pointer-events: none;
+  }
+  .switch span::after {
+    content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.2); transition: transform .15s;
+  }
+  .switch input:checked + span { background: var(--ui-accent); }
+  .switch input:checked + span::after { transform: translateX(14px); }
+  .switch input:focus-visible + span { outline: 2px solid var(--ui-accent); outline-offset: 2px; }
+
+  /* segmented */
+  .seg { display: flex; background: #f4f4f5; border-radius: 8px; padding: 3px; gap: 2px; }
+  .seg button {
+    flex: 1; border: 0; background: transparent; border-radius: 6px; padding: 7px 4px;
+    font: inherit; font-size: 12px; color: var(--ui-sub); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+  }
+  .seg button:disabled { cursor: not-allowed; }
+  .is-dimmed-ui { opacity: .4; }
+  .is-dimmed-ui label, .is-dimmed-ui .switch input { cursor: not-allowed; }
+  /* 겹쳤을 때 컬러: long labels size to their text and stay on one line */
+  #onSeg button { flex: 1 1 auto; white-space: nowrap; padding: 7px 6px; gap: 4px; }
+  .seg button[aria-pressed="true"] { background: #fff; color: var(--ui-text); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+
+  /* custom colour fields */
+  .custom { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .cfield { display: flex; align-items: center; gap: 10px; min-height: 32px; }
+  .cfield .swatch { flex: none; }
+  .cfield label { font-size: 12px; line-height: 1.3; display: flex; align-items: center; gap: 6px; }
+  .cfield .tag { white-space: nowrap; font: 500 10.5px/1 Inter, sans-serif; color: var(--ui-sub); background: #f4f4f5; border-radius: 4px; padding: 3px 5px; }
+  .cgroup { margin: 2px 0 2px; font-size: 11.5px; font-weight: 600; color: var(--ui-sub); display: flex; align-items: center; gap: 6px; }
+  /* inset divider between the 헤더·메뉴 and 검색 groups */
+  .cdivider[hidden] { display: none; }
+  .cdivider { height: 1px; background: var(--ui-line); margin: 10px 0 8px; border: 0; }
+  .checker {
+    background-image: linear-gradient(45deg, #e4e4e7 25%, transparent 25%, transparent 75%, #e4e4e7 75%), linear-gradient(45deg, #e4e4e7 25%, transparent 25%, transparent 75%, #e4e4e7 75%);
+    background-size: 8px 8px; background-position: 0 0, 4px 4px; background-color: #fff;
+  }
+  .swatch {
+    position: relative; width: 28px; height: 28px; border-radius: 6px; overflow: hidden; padding: 0; cursor: pointer;
+    border: 1px solid var(--ui-line);
+  }
+  .swatch i { position: absolute; inset: 0; background: var(--v); pointer-events: none; }
+  .swatch[aria-expanded="true"] { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--ui-accent); }
+  .swatch:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 2px; }
+
+  /* colour picker — Figma menu/color/custom (6870:297859) */
+  .cpick {
+    position: fixed; z-index: 50; width: 238px; padding: 1px; background: #fff;
+    border: 1px solid rgba(51,62,76,.1); border-radius: 12px; box-shadow: 0 4px 10px rgba(65,78,97,.08), 0 12px 32px rgba(65,78,97,.12);
+    font-family: Pretendard, sans-serif;
+  }
+  .cpick[hidden] { display: none; }
+  .cp-sv { position: relative; height: 172px; margin: 16px; border-radius: 4px; cursor: crosshair; touch-action: none;
+    background: linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent), hsl(var(--h) 100% 50%); }
+  .cp-handle {
+    position: absolute; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; border: 2px solid #fff;
+    box-shadow: 0 1px 1px rgba(65,78,97,.08), 0 2px 8px rgba(65,78,97,.16); pointer-events: none; background: var(--c);
+  }
+  .cp-track { position: relative; height: 8px; margin: 0 16px; border-radius: 9999px; cursor: pointer; touch-action: none; }
+  .cp-track .cp-handle { top: 4px; }
+  .cp-hue { margin-top: 4px; background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00); }
+  .cp-alpha { margin-top: 20px; }
+  .cp-alpha::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(to right, transparent, var(--solid)); }
+  .cp-input { display: flex; align-items: center; gap: 8px; padding: 20px 16px 16px; }
+  .cp-input > span { font: 500 12px/18px Pretendard, sans-serif; color: #333e4c; }
+  .cp-field { flex: 1; display: flex; align-items: center; min-width: 0; background: #f6f7f9; border-radius: 6px; }
+  .cp-field label { display: flex; align-items: center; gap: 2px; padding: 8px; font: 400 12px/18px Pretendard, sans-serif; color: #99a0aa; }
+  .cp-field label:first-child { flex: 1; min-width: 0; }
+  .cp-field label + label { border-left: 1px solid rgba(51,62,76,.1); padding-left: 10px; }
+  .cp-field input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; padding: 0; font: inherit; color: #333e4c; text-transform: uppercase; }
+  .cp-field input.pct { width: 26px; text-align: right; }
+  .cp-field input[aria-invalid="true"] { color: #dc2626; }
+  .cp-blur { padding: 0 16px 16px; border-top: 1px solid rgba(51,62,76,.08); margin-top: -2px; padding-top: 14px; }
+  .cp-blur[hidden] { display: none; }
+  .cp-blur-head { display: flex; align-items: center; justify-content: space-between; font: 500 12px/18px Pretendard, sans-serif; color: #333e4c; }
+  .cp-blur-head label { white-space: nowrap; cursor: pointer; }
+  .cp-blur-row { margin-top: 10px; display: flex; align-items: center; gap: 10px; font: 500 12px/18px Pretendard, sans-serif; color: #333e4c; }
+  .cp-blur-row[hidden] { display: none; }
+  .cp-blur-row input[type="range"] { flex: 1; min-width: 0; accent-color: #1b4efe; }
+  .cp-blur-row output { flex: none; width: 34px; text-align: right; font: 400 12px/18px Inter, sans-serif; color: #333e4c; }
+  .cp-blur p { margin: 6px 0 0; font-size: 11px; line-height: 1.5; color: #99a0aa; }
+
+  .group-divider { height: 1px; margin: 18px -20px 0; border: 0; background: var(--ui-line); }
+  .group-desc { margin: 4px 0 12px; }
+  .on-sub { margin: 18px 0 0; color: var(--ui-text); font-weight: 600; }
+  /* 헤더 · 메뉴 · 검색: one row each; rows outside the type's range aren't shown */
+  .surfaces { display: flex; flex-direction: column; gap: 8px; }
+  .surface-row { display: flex; align-items: center; gap: 8px; min-height: 36px; }
+  .surface-name { width: 34px; flex: none; font-size: 12.5px; font-weight: 600; }
+  /* scheme picker: each option shows its colours — 배경, 글자, 호버 */
+  .aa {
+    position: relative; flex: none; width: 26px; height: 26px; border-radius: 6px; overflow: hidden;
+    display: flex; justify-content: center; background: var(--b); color: var(--c);
+    font: 600 11px/20px Inter, sans-serif; font-style: normal; box-shadow: inset 0 0 0 1px rgba(0,0,0,.12);
+  }
+  .aa::after { content: ""; position: absolute; left: 6px; right: 6px; bottom: 5px; height: 2px; border-radius: 1px; background: var(--u); }
+  .aa[hidden] { display: flex; visibility: hidden; } /* list: keeps the names aligned */
+  .scheme-btn .aa[hidden] { display: none; }
+  .scheme-btn:has(.aa[hidden]) { padding-left: 11px; }
+  .scheme-pick { position: relative; flex: 1; min-width: 0; }
+  .scheme-btn {
+    display: flex; align-items: center; gap: 8px; width: 100%; height: 38px; padding: 0 10px 0 6px; cursor: pointer;
+    border: 1px solid var(--ui-line); border-radius: 8px; background: #fff;
+    font: 500 12.5px/1 Pretendard, sans-serif; color: var(--ui-text);
+  }
+  .scheme-btn:hover { border-color: #c9ccd2; }
+  .scheme-btn:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 1px; }
+  .scheme-btn[aria-expanded="true"] { border-color: var(--ui-accent); }
+  .scheme-btn b { flex: 1; min-width: 0; font-weight: 500; text-align: left; }
+  .scheme-btn svg { width: 14px; height: 14px; flex: none; color: var(--ui-sub); transition: transform .15s ease; }
+  .scheme-btn[aria-expanded="true"] svg { transform: rotate(180deg); }
+  .scheme-list {
+    position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 20; margin: 0; padding: 4px; list-style: none;
+    background: #fff; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.16), 0 0 0 1px rgba(0,0,0,.05);
+  }
+  .scheme-list[hidden] { display: none; }
+  .scheme-opt {
+    display: flex; align-items: center; gap: 8px; width: 100%; height: 36px; padding: 0 8px 0 4px; cursor: pointer;
+    border: 0; border-radius: 7px; background: none; text-align: left;
+    font: 500 12.5px/1 Pretendard, sans-serif; color: var(--ui-text);
+  }
+  .scheme-opt span { flex: 1; }
+  .scheme-opt:hover, .scheme-opt:focus-visible { background: #f6f7f9; outline: 0; }
+  .scheme-opt[aria-selected="true"] { background: #f1f2f4; }
+  .scheme-opt svg { width: 16px; height: 16px; flex: none; visibility: hidden; }
+  .scheme-opt[aria-selected="true"] svg { visibility: visible; }
+  .surface[hidden] { display: none; }
+  .custom.is-scoped .cgroup, .custom.is-scoped .cdivider { display: none; }
+  .split-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 28px; font-size: 12px; }
+  .split-row[hidden] { display: none; }
+  .cfield[hidden] { display: none; }
+
+
+  /* ── Stage ─────────────────────────────────────── */
+  .stage { position: relative; background: #eff1f4; padding: 32px; min-width: 0; min-height: 0; overflow: hidden; }
+  .stage-inner { display: flex; flex-direction: column; gap: 28px; margin: 0 auto; }
+  .stage-tools { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; }
+  .stage-tools > .tool-select { justify-self: start; }
+  /* 화면별 보기: pick the screen, the panel lists only its colours */
+  .screen-seg { display: flex; gap: 2px; padding: 3px; border-radius: 8px; background: #e3e6ea; }
+  .screen-seg[hidden] { display: none; }
+  .screen-seg button {
+    min-width: 88px; border: 0; border-radius: 6px; padding: 9px 14px; background: transparent; cursor: pointer;
+    font: 500 13px/1 Pretendard, sans-serif; color: var(--ui-sub); white-space: nowrap;
+  }
+  .screen-seg button[aria-pressed="true"] { background: #fff; color: var(--ui-text); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .screen-seg button:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 1px; }
+  .auto-show[hidden] { display: none; }
+  /* preview toolbar selects — Figma 180 × 42 dropdowns */
+  .tool-select {
+    position: relative; display: flex; align-items: center; min-width: 180px; height: 42px;
+    background: #fff; border: 1px solid #dee1e6; border-radius: 6px; color: #0a0a0a;
+  }
+  .tool-select > svg { position: absolute; left: 10px; width: 16px; height: 16px; pointer-events: none; }
+  .tool-select .caret { left: auto; right: 15px; width: 14px; height: 14px; }
+  .tool-select select {
+    appearance: none; -webkit-appearance: none; width: 100%; height: 100%; border: 0; background: transparent;
+    padding: 0 36px 0 36px; font: 400 14px/1.5 Pretendard, sans-serif; color: inherit; cursor: pointer; border-radius: 6px;
+  }
+  .tool-select select:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 1px; }
+
+  .tool-btn { cursor: pointer; font: 400 14px/1.5 Pretendard, sans-serif; padding: 0 36px; text-align: left; }
+  .tool-btn:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 1px; }
+  .display-wrap { position: relative; }
+  /* 헤더 겹치기 status on the 헤더 표시 button */
+  .ov-badge {
+    display: inline-flex; align-items: center; gap: 5px; margin-left: 8px; padding: 2px 8px 2px 7px; border-radius: 999px;
+    font: 600 11.5px/18px Pretendard, sans-serif; vertical-align: 1px; background: #f4f4f5; color: var(--ui-sub);
+  }
+  .ov-badge i { width: 6px; height: 6px; border-radius: 50%; background: #a1a1aa; }
+  .ov-badge.is-on { background: #e9f6e9; color: #2a7d2b; }
+  .ov-badge.is-on i { background: #3eaf3f; }
+  .tool-btn:disabled { cursor: not-allowed; opacity: .5; }
+  /* 헤더 표시 popover — Figma 6870:297330 */
+  .pop {
+    position: absolute; right: 0; top: calc(100% + 6px); z-index: 30; width: 381px; padding: 20px;
+    background: #fff; border-radius: 6px; box-shadow: 0 0 20px rgba(0,0,0,.35);
+    display: flex; flex-direction: column; gap: 20px;
+  }
+  .pop[hidden] { display: none; }
+  .pop-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .pop-title { margin: 0; font: 500 16px/1.5 Pretendard, sans-serif; color: #000; }
+  .pop-desc { margin: 7px 0 0; font: 400 12px/1.5 Pretendard, sans-serif; color: #797979; }
+  .pop-box { border: 1px solid #e3e3e3; border-radius: 6px; padding: 18px 15px 6px; }
+  .pop-box .pop-desc { margin: 0 0 8px; }
+  .pop-box .pop-desc#insetHint { margin: 4px 0 10px; }
+  .pick-row { display: flex; align-items: center; justify-content: space-between; height: 38px; font: 400 14px/1.5 Pretendard, sans-serif; color: #000; }
+  .pick {
+    display: flex; align-items: center; gap: 7px; border: 0; background: none; padding: 4px 0 4px 8px; cursor: pointer;
+    font: 400 14px/1.5 Pretendard, sans-serif; color: #000; border-radius: 4px;
+  }
+  .pick b { font-weight: 400; }
+  .pick .caret { width: 16px; height: 16px; }
+  .pick:hover { background: #f6f7f9; }
+  .pick:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 1px; }
+  /* option list — Figma 6870:297344 */
+  .pick-menu {
+    position: absolute; z-index: 31; width: 284px; margin: 0; padding: 12px 0 4px; list-style: none;
+    background: #fff; border-radius: 6px; box-shadow: 0 0 20px rgba(0,0,0,.35);
+  }
+  .pick-menu[hidden] { display: none; }
+  .pick-menu li {
+    display: flex; align-items: center; justify-content: space-between; height: 50px; padding: 0 20px 0 26px; margin-bottom: 1px;
+    font: 500 12px/1.5 Pretendard, sans-serif; color: #000; cursor: pointer;
+  }
+  .pick-menu li:hover { background: #f6f7f9; }
+  .pick-menu li[aria-selected="true"] { background: #f0f4ff; }
+  .pick-menu .check { width: 18px; height: 18px; color: #1b4efe; visibility: hidden; }
+  .pick-menu li[aria-selected="true"] .check { visibility: visible; }
+  /* green switch used in the popover (toggle_on #3eaf3f) */
+  .switch.green input:checked + span { background: #3eaf3f; }
+
+  /* editor depth 1: menu list — Figma 17548:102762 */
+  .menu-list { list-style: none; margin: 0; padding: 30px 24px; display: flex; flex-direction: column; gap: 8px; }
+  .menu-item {
+    display: flex; align-items: center; gap: 10px; width: 100%; height: 52px; padding: 0 16px 0 10px;
+    background: #fff; border: 1px solid #e3e3e3; border-radius: 6px; cursor: pointer;
+    font: 400 14px/1.5 Pretendard, sans-serif; color: #000; text-align: left;
+  }
+  .menu-item:hover { background: #fafafa; }
+  .menu-item:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 1px; }
+  .menu-item .ico { width: 32px; height: 32px; border-radius: 6px; background: #f6f7f9; display: flex; align-items: center; justify-content: center; color: #323232; flex: none; }
+  .menu-item .ico svg { width: 16px; height: 16px; }
+  .menu-item span { flex: 1; }
+  .menu-item > svg { width: 16px; height: 16px; color: #0a0a0a; flex: none; }
+  /* editor depth 2 */
+  .depth-head { display: flex; align-items: center; gap: 4px; height: 56px; padding: 0 16px 0 12px; border-bottom: 1px solid var(--ui-line); }
+  .depth-head h2 { margin: 0; font: 700 15px/1.5 Pretendard, sans-serif; }
+  .back-btn {
+    width: 32px; height: 32px; border: 0; border-radius: 6px; background: transparent; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; color: #0a0a0a;
+  }
+  .back-btn:hover { background: #f4f4f5; }
+  .back-btn svg { width: 18px; height: 18px; }
+  .empty-depth { padding: 40px 24px; text-align: center; font-size: 13px; color: var(--ui-sub); line-height: 1.6; }
+  .tools-right { display: flex; align-items: center; gap: 16px; margin-left: auto; }
+  #depthColor:not(.is-hidden) { display: flex; flex-direction: column; flex: 1 0 auto; }
+  .auto-show {
+    position: sticky; bottom: 0; margin-top: auto; z-index: 5;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 12px 20px; background: var(--ui-panel); border-top: 1px solid var(--ui-line);
+  }
+  .auto-show label { font-size: 12px; font-weight: 500; white-space: nowrap; cursor: pointer; }
+  /* one-time tooltip announcing the toggle */
+  .coach {
+    position: absolute; bottom: calc(100% + 10px); right: 12px; z-index: 20; width: 260px;
+    background: #18181b; color: #fff; border-radius: 10px; padding: 12px 14px;
+    box-shadow: 0 12px 32px rgba(0,0,0,.24);
+    display: flex; flex-direction: column; gap: 10px;
+    animation: coach-in .2s ease-out;
+  }
+  .coach[hidden] { display: none; }
+  .coach::before {
+    content: ""; position: absolute; bottom: -5px; right: 18px; width: 10px; height: 10px;
+    background: inherit; transform: rotate(45deg); border-radius: 2px;
+  }
+  .coach p { margin: 0; font-size: 12px; line-height: 1.5; }
+  .coach-close {
+    align-self: flex-end; border: 0; border-radius: 6px; padding: 5px 10px; cursor: pointer;
+    background: #fff; color: #18181b; font: 600 11.5px/1 Pretendard, sans-serif;
+  }
+  @keyframes coach-in { from { opacity: 0; transform: translateY(4px); } }
+  @media (prefers-reduced-motion: reduce) { .coach { animation: none; } }
+  .previews { display: flex; gap: 24px; align-items: flex-start; }
+  .pane { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+  .pane.desktop, .pane.mobile { flex: none; }
+  .pane-label {
+    display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+    font-size: 12px; margin-bottom: 8px; min-height: 22px;
+  }
+  .status {
+    font-family: Inter, sans-serif; font-size: 11px; padding: 3px 8px; border-radius: 999px;
+    background: #fff; border: 1px solid var(--ui-line); color: var(--ui-sub);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+  }
+  .status b { color: var(--ui-text); font-weight: 600; }
+  .frame {
+    position: relative; flex: 1; min-height: 0; border-radius: 6px; overflow: hidden;
+    background: #fff; box-shadow: 0 0 10px rgba(0,0,0,.15);
+  }
+  .pane .frame { flex: none; }
+  .m .scroller, .m-menu { scrollbar-width: none; }
+  .viewport { position: absolute; left: 0; top: 0; width: var(--vw); transform-origin: 0 0; }
+  .scroller { position: absolute; inset: 0; overflow-y: auto; container-type: size; }
+
+  /* ── 컬러 항목: one row per token, grouped like the Figma table ── */
+  .items-note { margin: 0 0 16px; }
+  .item-group + .item-group { margin-top: 18px; }
+  .item-group h3 { margin: 0; font-size: 12.5px; font-weight: 600; }
+  .item-group > p { margin: 3px 0 8px; font-size: 11.5px; color: var(--ui-sub); line-height: 1.5; }
+  .item-group[hidden], .citem[hidden] { display: none; }
+  .citem { display: flex; align-items: center; gap: 10px; min-height: 40px; }
+  .citem label { flex: 1; min-width: 0; font-size: 12px; line-height: 1.3; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .dev {
+    flex: none; font: 600 10.5px/1 Pretendard, sans-serif; padding: 3px 6px; border-radius: 4px;
+    color: var(--ui-sub); background: #f1f2f4;
+  }
+  .dev[hidden] { display: none; }
+  .citem .tag[hidden] { display: none; }
+  .citem .tag { white-space: nowrap; font: 500 10.5px/1 Inter, sans-serif; color: var(--ui-sub); background: #f4f4f5; border-radius: 4px; padding: 3px 5px; }
+  .group-divider { height: 1px; margin: 18px -20px 0; border: 0; background: var(--ui-line); }
+  .logo-row > span { font-size: 12.5px; font-weight: 600; }
+  .set-thumb.pair { position: relative; }
+  .set-count { display: block; margin-top: 4px; font-size: 11px; color: var(--ui-accent); font-weight: 600; }
+
+  /* ── Storefront: Set 01 (desktop) + mobile A · B · F ────────── */
+  /* colour tokens (--header-*, --header-menu-*, --header-search-*, --header-backdrop) are set inline */
+  .frame { --hdr-h: 64px; --pad-x: 19px; }
+  .frame.m { --hdr-h: 52px; --pad-x: 16px; }
+  .hdr { position: sticky; top: 0; z-index: 3; font: 400 13px/1.2 Inter, sans-serif; }
+  .hdr-bar {
+    position: relative; z-index: 3;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    height: var(--hdr-h); padding: 0 var(--pad-x);
+    background: var(--header-background); color: var(--header-nav);
+    -webkit-backdrop-filter: blur(var(--header-blur, 0px)); backdrop-filter: blur(var(--header-blur, 0px));
+    transition: background-color .25s ease, color .25s ease;
+  }
+  /* logo inlined as data URI: file:// pages block CSS masks loaded from disk */
+  .hdr-logo {
+    flex: none; width: 67.5px; height: 15px; background: var(--logo-color);
+    -webkit-mask: var(--logo) center / contain no-repeat; mask: var(--logo) center / contain no-repeat;
+  }
+  .hdr-item {
+    position: relative; display: flex; align-items: center; height: 100%; padding: 0 8px;
+    color: inherit; text-decoration: none; white-space: nowrap; cursor: pointer;
+    border: 0; background: none; font: inherit;
+  }
+  /* no hover colour token: the same colour, underlined */
+  .hdr-item:hover > span, .hdr-item.is-open > span { text-decoration: underline; text-underline-offset: 2px; }
+
+  /* set01_header: logo left, menu centred, utility right */
+  .d-nav { position: absolute; left: 50%; top: 0; height: 100%; transform: translateX(-50%); display: flex; gap: 12px; }
+  .d-util { display: flex; gap: 12px; height: 100%; margin-right: -8px; }
+  .d-close { display: none; }
+  .hdr.is-search .d-nav, .hdr.is-search .d-util { display: none; }
+  .hdr.is-search .d-close { display: flex; margin-right: -8px; }
+
+  /* set01 2depth: a dropdown card under the item, behind it the page is dimmed */
+  .dd {
+    position: absolute; left: 0; top: 100%; min-width: 132px; padding: 8px 0 12px;
+    background: var(--header-background); color: var(--header-menu-nav);
+    display: flex; flex-direction: column; align-items: flex-start;
+    opacity: 0; visibility: hidden; transition: opacity .2s ease, visibility 0s linear .2s, background-color .25s ease;
+  }
+  .dd a { padding: 6px 16px 6px 8px; color: inherit; text-decoration: none; text-transform: capitalize; }
+  .dd a:hover { text-decoration: underline; text-underline-offset: 2px; }
+  .hdr.is-open .dd { opacity: 1; visibility: visible; transition: opacity .2s ease, visibility 0s, background-color .25s ease; }
+  .dim {
+    position: absolute; left: 0; right: 0; bottom: 0; top: var(--hdr-h); z-index: 2; background: var(--header-backdrop);
+    -webkit-backdrop-filter: blur(var(--backdrop-blur, 0px)); backdrop-filter: blur(var(--backdrop-blur, 0px));
+    opacity: 0; pointer-events: none; transition: opacity .25s ease;
+  }
+  .frame.is-dimmed .dim { opacity: 1; }
+
+  /* search field — shared by desktop and mobile */
+  .sf {
+    display: flex; align-items: center; gap: 8px; padding: 13px 0 14px;
+    border-bottom: 1px solid var(--header-search-border-inactive); transition: border-color .2s ease;
+  }
+  .sf.is-active { border-bottom-color: var(--header-search-border-active); }
+  .sf-icon { flex: none; width: 16px; height: 16px; color: var(--header-search-icon); }
+  .sf-box { position: relative; flex: 1; min-width: 0; }
+  .sf input {
+    width: 100%; border: 0; outline: 0; padding: 0; background: transparent;
+    font: 400 13px/1.2 Inter, Pretendard, sans-serif; color: var(--header-search-input-text); caret-color: var(--header-search-cursor);
+  }
+  .sf input::placeholder { color: var(--header-search-placeholder-text); }
+  /* while a search colour is being edited the field isn't focused, so its cursor is drawn */
+  .sf-mirror { position: absolute; inset: 0; display: none; align-items: center; pointer-events: none; font: 400 13px/1.2 Inter, Pretendard, sans-serif; }
+  .sf-mirror b { visibility: hidden; font-weight: 400; white-space: pre; }
+  .sf-mirror i { width: 1px; height: 15px; background: var(--header-search-cursor); animation: blink 1s steps(1) infinite; }
+  .sf.show-caret .sf-mirror { display: flex; }
+  @keyframes blink { 50% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .sf-mirror i { animation: none; } }
+  .res-head { display: flex; align-items: center; justify-content: space-between; }
+  .res-label { color: var(--header-search-result-label); }
+  .res-link { color: var(--header-search-result-link); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+
+  /* set01_searchBar + set01_searchResult: covers the page under the header */
+  .d-search {
+    position: absolute; left: 0; right: 0; top: 100%; z-index: 2; height: calc(1080px - var(--hdr-h));
+    padding: 36px var(--pad-x) 40px; overflow-y: auto; scrollbar-width: none;
+    background: var(--header-background); opacity: 0; visibility: hidden;
+    transition: opacity .2s ease, visibility 0s linear .2s, background-color .25s ease;
+  }
+  .hdr.is-search .d-search { opacity: 1; visibility: visible; transition: opacity .2s ease, visibility 0s, background-color .25s ease; }
+  .d-search .res { margin-top: 48px; }
+  .d-search.is-empty .res { display: none; }
+  .d-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 28px; }
+  .d-grid .ph { aspect-ratio: 3 / 4; background: #d9d9d9; }
+  .d-grid .ph.p2 { background: #c9c9c9; } .d-grid .ph.p3 { background: #bdbdbd; } .d-grid .ph.p4 { background: #2b2b2b; }
+  .d-grid .nm { margin-top: 14px; color: var(--header-search-product-name); }
+  .d-grid .pr { margin-top: 6px; font-weight: 600; color: var(--header-search-product-price); }
+  .d-grid .pr s { margin-left: 4px; font-weight: 400; color: var(--header-search-product-price-original); }
+
+  /* ── mobile 390 × 844 · A / B / F pairings ── */
+  .m-screen { position: relative; height: 844px; overflow: hidden; }
+  .mb {
+    display: flex; align-items: center; justify-content: center; height: 100%; min-width: 24px; padding: 0;
+    border: 0; background: none; color: inherit; font: inherit; cursor: pointer; white-space: nowrap; text-decoration: none;
+  }
+  .mb svg { width: 20px; height: 20px; }
+  .m-left, .m-right { display: flex; align-items: center; gap: 16px; height: 100%; min-width: 48px; }
+  .m-right { justify-content: flex-end; }
+  .m .hdr-logo { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+  .frame[data-pair="B"] .hdr-logo { position: static; transform: none; }
+  /* which buttons each pairing shows */
+  .frame:not([data-pair="A"]) .only-a, .frame:not([data-pair="B"]) .only-b, .frame:not([data-pair="F"]) .only-f,
+  .frame[data-pair="A"] .not-a { display: none !important; }
+  .mb-close { display: none; }
+  .frame[data-pair="B"] .m-left { display: none; }
+  .m .hdr.is-menu .mb-open { display: none; }
+  .m .hdr.is-menu .m-left .mb-close { display: flex; }
+  /* B: an open panel keeps only the close button on the right */
+  .frame[data-pair="B"] .hdr.is-menu .hdr-logo, .frame[data-pair="B"] .hdr.is-menu .m-right > :not(.mb-close) { display: none; }
+  .frame[data-pair="B"] .hdr.is-menu .m-right .mb-close { display: flex; }
+  /* F: search keeps only the close button on the right */
+  .frame[data-pair="F"] .hdr.is-search .m-left, .frame[data-pair="F"] .hdr.is-search .hdr-logo,
+  .frame[data-pair="F"] .hdr.is-search .m-right > :not(.mb-close) { display: none; }
+  .frame[data-pair="F"] .hdr.is-search .m-right .mb-close { display: flex; }
+  .frame:is([data-pair="B"], [data-pair="F"]) .hdr.is-menu .hdr-bar { justify-content: flex-end; }
+  .frame[data-pair="F"] .hdr.is-menu:not(.is-search) .hdr-bar { justify-content: space-between; }
+
+  .m-panel {
+    position: absolute; left: 0; right: 0; top: 100%; height: calc(844px - var(--hdr-h)); z-index: 2;
+    display: flex; flex-direction: column; padding: 0 16px 24px; overflow-y: auto; scrollbar-width: none;
+    background: var(--header-background); color: var(--header-menu-nav);
+    opacity: 0; visibility: hidden; transition: opacity .2s ease, visibility 0s linear .2s, background-color .25s ease;
+  }
+  .hdr.is-menu .m-panel { opacity: 1; visibility: visible; transition: opacity .2s ease, visibility 0s, background-color .25s ease; }
+  .m-panel .sf { padding-top: 16px; }
+  .m-res { margin-top: 28px; }
+  .m-res ul { margin: 18px 0 0; padding: 0; list-style: none; color: var(--header-search-result); }
+  .m-res li { padding: 9px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .m-panel.is-empty .m-res { display: none; }
+  .m-item {
+    display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px 0;
+    border: 0; background: none; color: inherit; font: inherit; text-align: left; text-transform: capitalize; cursor: pointer;
+  }
+  .m-item svg { width: 14px; height: 14px; flex: none; }
+  .m-list { margin-top: 12px; }
+  .m-back { color: var(--header-menu-back); justify-content: flex-start; gap: 6px; }
+  .acc-ico { color: var(--header-menu-expand-icon); }
+  .acc-sub { display: none; padding: 0 0 8px 12px; }
+  .acc.is-open .acc-sub { display: block; }
+  .acc-sub .m-item { padding: 10px 0; }
+  .acc .ico-minus, .acc.is-open .ico-plus { display: none; }
+  .acc.is-open .ico-minus { display: block; }
+  .m-util { color: var(--header-menu-utility); }
+  .m-util .m-item { padding: 10px 0; }
+  .m-panel > .m-util { margin-top: auto; }
+  .frame[data-pair="F"] .m-panel > .m-util { margin-top: 64px; }
+  /* what each pairing shows in the panel */
+  .m-panel:not(.is-search-mode) .m-res, .m-panel.is-search-mode .m-list, .m-panel.is-search-mode .m-util,
+  .frame[data-pair="A"] .m-res, .frame:not([data-pair="A"]) .m-panel:not(.is-search-mode) .sf { display: none; }
+  .m-panel[data-depth="1"] .depth2, .m-panel[data-depth="2"] .depth1 { display: none; }
+
+  /* the page starts under the header; the hero fills the rest of the first screen */
+  .hero { height: calc(100cqh - var(--hdr-h)); }
+
+  /* heroSection/fullBleed_center */
+  .hero {
+    position: relative; height: 100cqh; min-height: 560px;
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+    padding: 96px 0;
+  }
+  .hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .hero-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.2); }
+  .hero[data-tone="light"] .hero-overlay { background: transparent; }
+  .hero-content { position: relative; width: min(1200px, 90%); text-align: center; color: #fff; display: flex; flex-direction: column; gap: 12px; }
+  .hero-content p { margin: 0; font-family: Pretendard, sans-serif; font-size: 14px; line-height: 20px; text-transform: capitalize; }
+  .hero-content h2 { margin: 0; font-family: Inter, sans-serif; font-weight: 600; font-size: 48px; line-height: 58px; letter-spacing: -0.2px; text-transform: capitalize; }
+  .hero-dots { display: none; }
+  .m .hero { min-height: 0; padding: 72px 20px; }
+  .m .hero-content { width: 100%; gap: 8px; }
+  .m .hero-content h2 { font-weight: 700; font-size: 40px; line-height: 50px; text-transform: none; }
+  .m .hero-dots { position: absolute; left: 64px; right: 64px; bottom: 24px; display: flex; gap: 8px; justify-content: center; }
+  .m .hero-dots i { flex: 1; max-width: 40px; height: 2px; background: rgba(255,255,255,.4); }
+  .m .hero-dots i:first-child { background: #fff; }
+
+  /* filler sections */
+  .section { padding: 64px 19px; font-family: Inter, sans-serif; color: #111; }
+  .section h3 { font-size: 13px; font-weight: 500; margin: 0 0 20px; }
+  .crumb { font-size: 12px; color: #6b6b6b; margin-bottom: 8px; }
+  .title { font-size: 28px; font-weight: 500; margin: 0 0 32px; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .card .ph { aspect-ratio: 3 / 4; background: #ddd; }
+  .card .t { font-size: 13px; margin-top: 10px; }
+  .card .p { font-size: 13px; color: #6b6b6b; margin-top: 4px; }
+  .band { background: #f2f1ee; padding: 96px 19px; text-align: center; font-family: Inter, sans-serif; font-size: 22px; color: #111; }
+  .m .section { padding: 40px 16px; }
+  .m .title { font-size: 22px; margin-bottom: 20px; }
+  .m .grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .m .band { padding: 64px 16px; font-size: 18px; }
+</style>
+</head>
+<body data-depth="depthRoot">
+
+<header class="topbar">
+  <h1>헤더 편집</h1>
+  <span class="divider" aria-hidden="true"></span>
+  <button type="button" class="text-btn" id="openDesigns" aria-haspopup="dialog"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M13.0563 13.5394C12.9787 13.2496 13.2936 12.9934 13.5828 13.1113L18.2476 15.0164C18.5288 15.1312 18.4904 15.5216 18.1898 15.6024L16.0365 16.1794C15.9595 16.2 15.8876 16.2363 15.8265 16.286C15.7653 16.3357 15.7158 16.3975 15.6825 16.4666L14.8971 18.0926C14.7639 18.3686 14.3438 18.3442 14.2664 18.056L13.0563 13.5394ZM17.5868 3.34001C18.0069 3.38278 18.3346 3.73787 18.3346 4.16927V14.2547L17.0016 13.7111V11.4748H3.00098V15.3363H12.7406L13.0978 16.6693H2.5013C2.04107 16.6693 1.66797 16.2962 1.66797 15.8359V4.16927C1.66797 3.70903 2.04106 3.33594 2.5013 3.33594H17.5013L17.5868 3.34001ZM3.00098 10.1418H17.0016V4.66895H3.00098V10.1418ZM6.37744 5.54867C6.74563 5.54867 7.04395 5.84698 7.04395 6.21517C7.04373 6.58317 6.7455 6.88167 6.37744 6.88167H4.52848C4.16043 6.88167 3.8622 6.58317 3.86198 6.21517C3.86198 5.84698 4.16029 5.54867 4.52848 5.54867H6.37744Z"/></svg>다른 헤더 디자인 보기</button>
+  <div class="version-switch" role="group" aria-label="비교 버전">
+    <button type="button" data-mode="screens" aria-pressed="false">C2 · 화면별 보기</button>
+    <button type="button" data-mode="auto" aria-pressed="true">C1 · 자동 보기</button>
+  </div>
+  <div class="actions">
+    <button type="button" class="btn secondary">종료</button>
+    <button type="button" class="btn primary">완료</button>
+  </div>
+</header>
+
+<dialog class="design-dialog" id="designDialog" aria-labelledby="designTitle">
+  <form method="dialog">
+    <div class="dlg-head">
+      <h2 id="designTitle">헤더 디자인 선택</h2>
+      <p>헤더 유형마다 편집할 수 있는 컬러 항목이 달라요. 선택한 디자인은 적용을 눌러야 미리보기에 반영됩니다.</p>
+    </div>
+    <div class="dlg-body" id="sets"></div>
+    <div class="dlg-foot">
+      <button type="submit" class="btn secondary" value="cancel">취소</button>
+      <button type="submit" class="btn primary" value="apply" id="applyDesign">적용</button>
+    </div>
+  </form>
+</dialog>
+
+<aside class="editor" aria-label="헤더 편집기">
+  <div class="depth" id="depthRoot">
+    <ul class="menu-list">
+      <li><button type="button" class="menu-item" data-depth="menu"><i class="ico"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 4.66667C8.36667 4.66667 8.66667 4.96667 8.66667 5.33333V8C8.66667 8.36667 8.36667 8.66667 8 8.66667C7.63333 8.66667 7.33333 8.36667 7.33333 8V5.33333C7.33333 4.96667 7.63333 4.66667 8 4.66667ZM7.99333 1.33333C4.31333 1.33333 1.33333 4.32 1.33333 8C1.33333 11.68 4.31333 14.6667 7.99333 14.6667C11.68 14.6667 14.6667 11.68 14.6667 8C14.6667 4.32 11.68 1.33333 7.99333 1.33333ZM8 13.3333C5.05333 13.3333 2.66667 10.9467 2.66667 8C2.66667 5.05333 5.05333 2.66667 8 2.66667C10.9467 2.66667 13.3333 5.05333 13.3333 8C13.3333 10.9467 10.9467 13.3333 8 13.3333ZM8.66667 11.3333H7.33333V10H8.66667V11.3333Z"/></svg></i><span>메뉴</span><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M6.19333 4.47333C5.93333 4.73333 5.93333 5.15333 6.19333 5.41333L8.78 8L6.19333 10.5867C5.93333 10.8467 5.93333 11.2667 6.19333 11.5267C6.45333 11.7867 6.87333 11.7867 7.13333 11.5267L10.1933 8.46667C10.4533 8.20667 10.4533 7.78667 10.1933 7.52667L7.13333 4.46667C6.88 4.21333 6.45333 4.21333 6.19333 4.47333Z"/></svg></button></li>
+      <li><button type="button" class="menu-item" data-depth="color"><i class="ico"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 4.66667C8.36667 4.66667 8.66667 4.96667 8.66667 5.33333V8C8.66667 8.36667 8.36667 8.66667 8 8.66667C7.63333 8.66667 7.33333 8.36667 7.33333 8V5.33333C7.33333 4.96667 7.63333 4.66667 8 4.66667ZM7.99333 1.33333C4.31333 1.33333 1.33333 4.32 1.33333 8C1.33333 11.68 4.31333 14.6667 7.99333 14.6667C11.68 14.6667 14.6667 11.68 14.6667 8C14.6667 4.32 11.68 1.33333 7.99333 1.33333ZM8 13.3333C5.05333 13.3333 2.66667 10.9467 2.66667 8C2.66667 5.05333 5.05333 2.66667 8 2.66667C10.9467 2.66667 13.3333 5.05333 13.3333 8C13.3333 10.9467 10.9467 13.3333 8 13.3333ZM8.66667 11.3333H7.33333V10H8.66667V11.3333Z"/></svg></i><span>컬러</span><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M6.19333 4.47333C5.93333 4.73333 5.93333 5.15333 6.19333 5.41333L8.78 8L6.19333 10.5867C5.93333 10.8467 5.93333 11.2667 6.19333 11.5267C6.45333 11.7867 6.87333 11.7867 7.13333 11.5267L10.1933 8.46667C10.4533 8.20667 10.4533 7.78667 10.1933 7.52667L7.13333 4.46667C6.88 4.21333 6.45333 4.21333 6.19333 4.47333Z"/></svg></button></li>
+      <li><button type="button" class="menu-item" data-depth="scroll"><i class="ico"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 4.66667C8.36667 4.66667 8.66667 4.96667 8.66667 5.33333V8C8.66667 8.36667 8.36667 8.66667 8 8.66667C7.63333 8.66667 7.33333 8.36667 7.33333 8V5.33333C7.33333 4.96667 7.63333 4.66667 8 4.66667ZM7.99333 1.33333C4.31333 1.33333 1.33333 4.32 1.33333 8C1.33333 11.68 4.31333 14.6667 7.99333 14.6667C11.68 14.6667 14.6667 11.68 14.6667 8C14.6667 4.32 11.68 1.33333 7.99333 1.33333ZM8 13.3333C5.05333 13.3333 2.66667 10.9467 2.66667 8C2.66667 5.05333 5.05333 2.66667 8 2.66667C10.9467 2.66667 13.3333 5.05333 13.3333 8C13.3333 10.9467 10.9467 13.3333 8 13.3333ZM8.66667 11.3333H7.33333V10H8.66667V11.3333Z"/></svg></i><span>스크롤</span><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M6.19333 4.47333C5.93333 4.73333 5.93333 5.15333 6.19333 5.41333L8.78 8L6.19333 10.5867C5.93333 10.8467 5.93333 11.2667 6.19333 11.5267C6.45333 11.7867 6.87333 11.7867 7.13333 11.5267L10.1933 8.46667C10.4533 8.20667 10.4533 7.78667 10.1933 7.52667L7.13333 4.46667C6.88 4.21333 6.45333 4.21333 6.19333 4.47333Z"/></svg></button></li>
+      <li><button type="button" class="menu-item" data-depth="size"><i class="ico"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 4.66667C8.36667 4.66667 8.66667 4.96667 8.66667 5.33333V8C8.66667 8.36667 8.36667 8.66667 8 8.66667C7.63333 8.66667 7.33333 8.36667 7.33333 8V5.33333C7.33333 4.96667 7.63333 4.66667 8 4.66667ZM7.99333 1.33333C4.31333 1.33333 1.33333 4.32 1.33333 8C1.33333 11.68 4.31333 14.6667 7.99333 14.6667C11.68 14.6667 14.6667 11.68 14.6667 8C14.6667 4.32 11.68 1.33333 7.99333 1.33333ZM8 13.3333C5.05333 13.3333 2.66667 10.9467 2.66667 8C2.66667 5.05333 5.05333 2.66667 8 2.66667C10.9467 2.66667 13.3333 5.05333 13.3333 8C13.3333 10.9467 10.9467 13.3333 8 13.3333ZM8.66667 11.3333H7.33333V10H8.66667V11.3333Z"/></svg></i><span>사이즈</span><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M6.19333 4.47333C5.93333 4.73333 5.93333 5.15333 6.19333 5.41333L8.78 8L6.19333 10.5867C5.93333 10.8467 5.93333 11.2667 6.19333 11.5267C6.45333 11.7867 6.87333 11.7867 7.13333 11.5267L10.1933 8.46667C10.4533 8.20667 10.4533 7.78667 10.1933 7.52667L7.13333 4.46667C6.88 4.21333 6.45333 4.21333 6.19333 4.47333Z"/></svg></button></li>
+      <li><button type="button" class="menu-item" data-depth="shopmenu"><i class="ico"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 4.66667C8.36667 4.66667 8.66667 4.96667 8.66667 5.33333V8C8.66667 8.36667 8.36667 8.66667 8 8.66667C7.63333 8.66667 7.33333 8.36667 7.33333 8V5.33333C7.33333 4.96667 7.63333 4.66667 8 4.66667ZM7.99333 1.33333C4.31333 1.33333 1.33333 4.32 1.33333 8C1.33333 11.68 4.31333 14.6667 7.99333 14.6667C11.68 14.6667 14.6667 11.68 14.6667 8C14.6667 4.32 11.68 1.33333 7.99333 1.33333ZM8 13.3333C5.05333 13.3333 2.66667 10.9467 2.66667 8C2.66667 5.05333 5.05333 2.66667 8 2.66667C10.9467 2.66667 13.3333 5.05333 13.3333 8C13.3333 10.9467 10.9467 13.3333 8 13.3333ZM8.66667 11.3333H7.33333V10H8.66667V11.3333Z"/></svg></i><span>상점 메뉴 표기 방식</span><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M6.19333 4.47333C5.93333 4.73333 5.93333 5.15333 6.19333 5.41333L8.78 8L6.19333 10.5867C5.93333 10.8467 5.93333 11.2667 6.19333 11.5267C6.45333 11.7867 6.87333 11.7867 7.13333 11.5267L10.1933 8.46667C10.4533 8.20667 10.4533 7.78667 10.1933 7.52667L7.13333 4.46667C6.88 4.21333 6.45333 4.21333 6.19333 4.47333Z"/></svg></button></li>
+    </ul>
+  </div>
+
+  <div class="depth is-hidden" id="depthOther">
+    <div class="depth-head"><button type="button" class="back-btn" data-back aria-label="뒤로"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M9.80667 4.47333C10.0667 4.73333 10.0667 5.15333 9.80667 5.41333L7.22 8L9.80667 10.5867C10.0667 10.8467 10.0667 11.2667 9.80667 11.5267C9.54667 11.7867 9.12667 11.7867 8.86667 11.5267L5.80667 8.46667C5.54667 8.20667 5.54667 7.78667 5.80667 7.52667L8.86667 4.46667C9.12 4.21333 9.54667 4.21333 9.80667 4.47333Z"/></svg></button><h2 id="otherTitle"></h2></div>
+    <p class="empty-depth">이 프로토타입에서는 컬러 설정만 제공합니다.</p>
+  </div>
+
+  <div class="depth is-hidden" id="depthColor">
+  <div class="depth-head"><button type="button" class="back-btn" data-back aria-label="뒤로"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M9.80667 4.47333C10.0667 4.73333 10.0667 5.15333 9.80667 5.41333L7.22 8L9.80667 10.5867C10.0667 10.8467 10.0667 11.2667 9.80667 11.5267C9.54667 11.7867 9.12667 11.7867 8.86667 11.5267L5.80667 8.46667C5.54667 8.20667 5.54667 7.78667 5.80667 7.52667L8.86667 4.46667C9.12 4.21333 9.54667 4.21333 9.80667 4.47333Z"/></svg></button><h2>컬러</h2></div>
+
+  <section class="group">
+    <p class="hint items-note" id="itemsNote"></p>
+    <div id="items"></div>
+
+    <hr class="group-divider">
+    <div class="logo-row">
+      <span id="logoLabel">로고 컬러</span>
+      <div class="seg logo-seg" id="logoSeg" role="group" aria-labelledby="logoLabel">
+        <button type="button" data-logo="light">밝은</button>
+        <button type="button" data-logo="dark">어두운</button>
+      </div>
+    </div>
+    <p class="hint">로고는 <a class="text-link" href="#" onclick="return false">브랜드 가이드</a>에서 설정 가능해요.</p>
+  </section>
+
+  <!-- stays at the bottom of the panel -->
+  <div class="auto-show" id="autoShowWrap">
+    <label for="autoShow">컬러 수정 중인 화면 자동 보기</label>
+    <span class="switch"><input type="checkbox" id="autoShow" role="switch" checked aria-describedby="autoShowTip"><span></span></span>
+    <div class="coach" id="autoShowTip" role="status" hidden>
+      <p>컬러를 수정하면 그 컬러가 쓰이는 화면을 미리보기에 자동으로 보여줘요. 여기서 끌 수 있어요.</p>
+      <button type="button" class="coach-close" aria-label="안내 닫기">확인</button>
+    </div>
+  </div>
+  </div>
+</aside>
+
+<main class="stage" id="stage">
+  <div class="stage-inner" id="stageInner">
+    <div class="stage-tools">
+      <label class="tool-select"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M3.03625 6.86577L3.03623 13.1653H6.19579V11.1065C6.19579 10.3333 6.82259 9.70652 7.59579 9.70652H8.40378C9.17698 9.70652 9.80378 10.3333 9.80378 11.1065V13.1653H12.9634V6.86577L7.99983 2.94449L3.03625 6.86577ZM7.58656 1.91161C7.82884 1.72021 8.17083 1.72021 8.4131 1.91161L13.7767 6.14889C13.9367 6.27532 14.0301 6.46805 14.0301 6.67201V13.5653C14.0301 13.9335 13.7316 14.2319 13.3634 14.2319H9.40378C9.03559 14.2319 8.73711 13.9335 8.73711 13.5653V11.1065C8.73711 10.9224 8.58787 10.7732 8.40378 10.7732H7.59579C7.4117 10.7732 7.26246 10.9224 7.26246 11.1065V13.5653C7.26246 13.9335 6.96398 14.2319 6.59579 14.2319H2.63623C2.26804 14.2319 1.96956 13.9335 1.96957 13.5653L1.96958 6.67201C1.96958 6.46805 2.06294 6.27532 2.22298 6.14889L7.58656 1.91161Z"/></svg>
+        <select id="page" autocomplete="off" aria-label="미리보기 페이지">
+          <option value="home-dark">Main · 어두운 히어로</option>
+          <option value="home-light">Main · 밝은 히어로</option>
+          <option value="sub">Sub · 히어로 없음</option>
+        </select><svg class="caret" viewBox="0 0 14 14" aria-hidden="true"><path fill="currentColor" d="M9.26333 5.41917L7 7.6825L4.73667 5.41917C4.50917 5.19167 4.14167 5.19167 3.91417 5.41917C3.68667 5.64667 3.68667 6.01417 3.91417 6.24167L6.59167 8.91917C6.81917 9.14667 7.18667 9.14667 7.41417 8.91917L10.0917 6.24167C10.3192 6.01417 10.3192 5.64667 10.0917 5.41917C9.86417 5.1975 9.49083 5.19167 9.26333 5.41917Z"/></svg>
+      </label>
+      <div class="screen-seg" id="screenSeg" role="group" aria-label="미리보기 화면" hidden>
+        <button type="button" data-screen="default" aria-pressed="true">기본</button>
+        <button type="button" data-screen="menu" aria-pressed="false">펼친 메뉴</button>
+        <button type="button" data-screen="search" aria-pressed="false">검색</button>
+      </div>
+    </div>
+    <div class="previews" id="previews"></div>
+  </div>
+</main>
+
+<template id="sfTpl">
+  <label class="sf">
+    <svg class="sf-icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.75" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="m10.5 10.5 3.25 3.25" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+    <span class="sf-box"><input type="text" aria-label="검색" autocomplete="off"><span class="sf-mirror" aria-hidden="true"><b></b><i></i></span></span>
+  </label>
+</template>
+
+<template id="desktopTpl">
+  <div class="pane desktop">
+    <div class="frame">
+      <div class="viewport">
+      <div class="dim"></div>
+      <div class="scroller">
+        <header class="hdr">
+          <div class="hdr-bar">
+            <div class="hdr-logo" role="img" aria-label="BRAND"></div>
+            <nav class="d-nav">
+              <div class="hdr-item" data-dd><span>Shop</span>
+                <div class="dd">
+                  <a>new arrivals</a><a>Essentials</a><a>Classics</a><a>Jackets</a>
+                  <a>tops</a><a>skirts</a><a>dresses</a><a>accessories</a>
+                </div>
+              </div>
+              <a class="hdr-item"><span>About</span></a>
+              <a class="hdr-item"><span>Journal</span></a>
+              <a class="hdr-item"><span>Info</span></a>
+              <a class="hdr-item"><span>The Story</span></a>
+            </nav>
+            <div class="d-util">
+              <button type="button" class="hdr-item" data-search><span>Search</span></button>
+              <a class="hdr-item"><span>Sign in</span></a>
+              <a class="hdr-item"><span>Bag (0)</span></a>
+            </div>
+            <button type="button" class="hdr-item d-close" data-close><span>Close</span></button>
+          </div>
+          <div class="d-search is-empty" data-sf-host>
+            <div class="res">
+              <div class="res-head"><span class="res-label">검색 결과</span><a class="res-link">전체보기</a></div>
+              <div class="d-grid">
+                <div><div class="ph"></div><p class="nm">Product Name</p><p class="pr">120,000원<s>200,000원</s></p></div>
+                <div><div class="ph p2"></div><p class="nm">CH 03 Essence Lounge Desert Taupe</p><p class="pr">180,000원</p></div>
+                <div><div class="ph p3"></div><p class="nm">Square Moduler Coffee Table</p><p class="pr">250,000원</p></div>
+                <div><div class="ph p4"></div><p class="nm">Handcrafted Solid Oak Object Natural Finish</p><p class="pr">90,000원</p></div>
+              </div>
+            </div>
+          </div>
+        </header>
+        <div class="page"></div>
+      </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="mobileTpl">
+  <div class="pane mobile">
+    <div class="frame m">
+      <div class="viewport">
+        <div class="m-screen">
+          <div class="scroller">
+            <header class="hdr">
+              <div class="hdr-bar">
+                <div class="m-left">
+                  <button type="button" class="mb mb-open only-a" data-menu>Menu</button>
+                  <button type="button" class="mb mb-close only-a" data-close>Close</button>
+                  <button type="button" class="mb mb-open only-f" data-menu aria-label="메뉴"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M3.5 6h13M3.5 10h13M3.5 14h13"/></svg></button>
+                  <button type="button" class="mb mb-close only-f" data-close aria-label="닫기"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="m5 5 10 10M15 5 5 15"/></svg></button>
+                </div>
+                <div class="hdr-logo" role="img" aria-label="BRAND"></div>
+                <div class="m-right">
+                  <a class="mb only-a">Bag (0)</a>
+                  <button type="button" class="mb only-b" data-msearch aria-label="검색"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="9" cy="9" r="5.5"/><path d="m13 13 3.5 3.5"/></svg></button>
+                  <a class="mb not-a" aria-label="장바구니"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M4.5 7h11l-.8 9.5H5.3L4.5 7Z"/><path d="M7.5 7V5.5a2.5 2.5 0 0 1 5 0V7"/></svg></a>
+                  <button type="button" class="mb mb-open only-b" data-menu aria-label="메뉴"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M3.5 6h13M3.5 10h13M3.5 14h13"/></svg></button>
+                  <button type="button" class="mb mb-close not-a" data-close aria-label="닫기"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="m5 5 10 10M15 5 5 15"/></svg></button>
+                </div>
+              </div>
+              <div class="m-panel is-empty" data-depth="1" data-sf-host>
+                <div class="m-res">
+                  <div class="res-head"><span class="res-label">검색 결과</span><a class="res-link">전체보기</a></div>
+                  <ul><li>Product Name</li><li>CH 03 Essence Lounge Desert Taupe</li><li>Search Result Max 1line Search Result Max 1line Search Result</li><li>Handcrafted Solid Oak Object Natural Finish</li></ul>
+                </div>
+                <nav class="m-list only-a">
+                  <div class="depth1">
+                    <button type="button" class="m-item" data-to2><span>shop</span><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="m8 5 5 5-5 5"/></svg></button>
+                    <a class="m-item">about</a><a class="m-item">journal</a><a class="m-item">info</a><a class="m-item">the story</a>
+                  </div>
+                  <div class="depth2">
+                    <button type="button" class="m-item m-back" data-to1><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="m12 5-5 5 5 5"/></svg><span>shop</span></button>
+                    <a class="m-item">new arrivals</a><a class="m-item">essentials</a><a class="m-item">classics</a><a class="m-item">jackets</a>
+                    <a class="m-item">tops</a><a class="m-item">skirts</a><a class="m-item">dresses</a><a class="m-item">accessories</a>
+                  </div>
+                </nav>
+                <nav class="m-list not-a">
+                  <div class="acc" data-acc="shop">
+                    <button type="button" class="m-item" data-acc-toggle><span>shop</span><span class="acc-ico"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" class="ico-plus"><path d="M10 4.5v11M4.5 10h11"/></svg><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" class="ico-minus"><path d="M4.5 10h11"/></svg></span></button>
+                    <div class="acc-sub">
+                      <a class="m-item">new arrivals</a><a class="m-item">essentials</a><a class="m-item">classics</a><a class="m-item">jackets</a>
+                      <a class="m-item">tops</a><a class="m-item">skirts</a><a class="m-item">dresses</a><a class="m-item">accessories</a>
+                    </div>
+                  </div>
+                  <div class="acc" data-acc="about">
+                    <button type="button" class="m-item" data-acc-toggle><span>about</span><span class="acc-ico"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" class="ico-plus"><path d="M10 4.5v11M4.5 10h11"/></svg><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" class="ico-minus"><path d="M4.5 10h11"/></svg></span></button>
+                    <div class="acc-sub"><a class="m-item">brand</a><a class="m-item">stores</a></div>
+                  </div>
+                  <a class="m-item">journal</a><a class="m-item">info</a><a class="m-item">the story</a>
+                </nav>
+                <div class="m-util">
+                  <a class="m-item">Sign in</a>
+                  <button type="button" class="m-item only-f" data-msearch>Search</button>
+                </div>
+              </div>
+            </header>
+            <div class="page"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<div class="cpick" id="cpick" role="dialog" aria-label="컬러 선택" hidden>
+  <div class="cp-sv" id="cpSV"><span class="cp-handle" id="cpSVh"></span></div>
+  <div class="cp-track cp-hue" id="cpHue"><span class="cp-handle" id="cpHueh"></span></div>
+  <div class="cp-track cp-alpha checker" id="cpAlpha"><span class="cp-handle" id="cpAlphah"></span></div>
+  <div class="cp-input">
+    <span>HEX</span>
+    <div class="cp-field">
+      <label># <input id="cpHex" maxlength="6" spellcheck="false" aria-label="HEX"></label>
+      <label><input id="cpPct" class="pct" inputmode="numeric" maxlength="3" aria-label="불투명도"> %</label>
+    </div>
+  </div>
+  <div class="cp-blur" id="cpBlur" hidden>
+    <div class="cp-blur-head">
+      <label for="cpBlurOn">배경 블러</label>
+      <span class="switch"><input type="checkbox" id="cpBlurOn" role="switch"><span></span></span>
+    </div>
+    <div class="cp-blur-row" id="cpBlurAmount">
+      <input type="range" id="cpBlurRange" min="1" max="30" step="1" aria-label="블러 강도">
+      <output id="cpBlurOut" for="cpBlurRange"></output>
+    </div>
+    <p id="cpBlurHint">배경 불투명도를 100% 미만으로 낮추면 헤더 뒤 콘텐츠가 흐리게 비쳐 보여요.</p>
+  </div>
+</div>
+
+<script>
+const DESKTOP_W = 1920, DESKTOP_H = 1080;
+const MOBILE_W = 390, MOBILE_H = 844;
+
+/* Set 01 pairs with mobile A · B · F. The desktop header is the same for all three; the mobile header,
+   and so the colour items the owner can edit, differ — Figma "유저 컬러 편집 항목 · Set 01 페어링별". */
+const PAIRS = {
+  A: { desc: '모바일: 메뉴 버튼 · 패널형' },
+  B: { desc: '모바일: 아이콘 · 아코디언형' },
+  F: { desc: '모바일: 햄버거 · 아코디언형' },
+};
+// where each item applies, per pairing: 'both' PC·모바일 · 'pc' · 'm' 모바일 · missing: not shown
+const ALL = { A: 'both', B: 'both', F: 'both' };
+const PC = { A: 'pc', B: 'pc', F: 'pc' };
+const ITEMS = [
+  { group: '헤더', desc: '헤더 바에 쓰는 컬러예요. 배경색은 펼친 메뉴와 검색 화면에도 함께 적용돼요.' },
+  { key: 'background', token: 'header/background', label: '배경색', on: ALL, view: 'default', screens: ['default', 'menu', 'search'] },
+  { key: 'nav', token: 'header/nav', label: '상단 메뉴·아이콘', on: ALL, view: 'default', screens: ['default', 'menu'] },
+  { group: '펼친 메뉴', desc: '메뉴를 펼쳤을 때 안쪽에 쓰는 컬러예요.' },
+  { key: 'menuNav', token: 'header-menu/nav', label: '메뉴 텍스트', on: ALL, view: 'menu' },
+  { key: 'menuExpand', token: 'header-menu/expand-icon', label: '펼치기 아이콘 (+ / −)', on: { B: 'm', F: 'm' }, view: 'menu', opts: { expand: true } },
+  { key: 'menuBack', token: 'header-menu/back', label: '뒤로가기 버튼', on: { A: 'm' }, view: 'menu', opts: { depth2: true } },
+  { key: 'menuUtility', token: 'header-menu/utility', label: '유틸리티 (로그인·마이페이지)', on: { A: 'm', B: 'm', F: 'm' }, view: 'menu' },
+  { group: '검색', desc: '검색을 열었을 때 쓰는 컬러예요.' },
+  { key: 'borderInactive', token: 'header-search/border-inactive', label: '검색창 선', on: ALL, view: 'search', opts: { empty: true } },
+  { key: 'borderActive', token: 'header-search/border-active', label: '검색창 선 (입력 중)', on: ALL, view: 'search' },
+  { key: 'placeholder', token: 'header-search/placeholder-text', label: '검색창 안내 문구', on: ALL, view: 'search', opts: { empty: true } },
+  { key: 'input', token: 'header-search/input-text', label: '입력한 검색어', on: ALL, view: 'search' },
+  { key: 'cursor', token: 'header-search/cursor', label: '커서', on: ALL, view: 'search' },
+  { key: 'searchIcon', token: 'header-search/icon', label: '검색 아이콘', on: ALL, view: 'search', opts: { empty: true } },
+  { divider: true }, // 검색창 above, 검색 결과 below
+  { key: 'resultLabel', token: 'header-search/result-label', label: '"검색 결과" 라벨', on: { A: 'pc', B: 'both', F: 'both' }, view: 'search' },
+  { key: 'result', token: 'header-search/result', label: '검색 결과 텍스트', on: { B: 'm', F: 'm' }, view: 'search' },
+  { key: 'resultLink', token: 'header-search/result-link', label: '전체보기 버튼', on: { A: 'pc', B: 'both', F: 'both' }, view: 'search' },
+  { key: 'productName', token: 'header-search/product-name', label: '상품명', on: PC, view: 'search' },
+  { key: 'productPrice', token: 'header-search/product-price', label: '판매가', on: PC, view: 'search' },
+  { key: 'productPriceOriginal', token: 'header-search/product-price-original', label: '원가', on: PC, view: 'search' },
+  { group: 'backdrop', desc: '메뉴를 펼쳤을 때 뒤쪽 화면을 덮는 컬러예요.' },
+  { key: 'backdrop', token: 'header-backdrop/default', label: '오버레이', on: PC, view: 'menu' },
+];
+// 화면별 보기: an item is listed on its own screen, plus wherever else Figma marks it (screens)
+const onScreen = (item, screen) => (item.screens || [item.view]).includes(screen);
+const ITEM = Object.fromEntries(ITEMS.filter(i => i.key).map(i => [i.key, i]));
+const DEV_LABEL = { pc: 'PC', m: '모바일' };
+// items whose picker also offers a blur: [on, amount] fields in state.colors, and the picker's wording
+const BLUR = {
+  background: { on: 'blurOn', px: 'blur', label: '배경 블러', hint: '배경 불투명도를 100% 미만으로 낮추면 헤더 뒤 콘텐츠가 흐리게 비쳐 보여요.' },
+  backdrop: { on: 'backdropBlurOn', px: 'backdropBlur', label: '블러', hint: '메뉴를 펼쳤을 때 오버레이 뒤의 화면이 흐리게 보여요.' },
+};
+const itemCount = pair => ITEMS.filter(i => i.key && i.on[pair]).length;
+
+// starting colours: the Base scheme of the earlier editors
+const DEFAULT_COLORS = {
+  background: '#ffffff', nav: '#1a1a1a',
+  menuNav: '#1a1a1a', menuUtility: '#5e5b57', menuBack: '#5e5b57', menuExpand: '#1a1a1a',
+  borderInactive: '#e4e1dc', borderActive: '#97938d', placeholder: '#97938d', input: '#1a1a1a', cursor: '#1a1a1a',
+  searchIcon: '#1a1a1a', resultLabel: '#5e5b57', result: '#1a1a1a', resultLink: '#1a1a1a',
+  productName: '#1a1a1a', productPrice: '#1a1a1a', productPriceOriginal: '#97938d',
+  backdrop: '#0f0e0d59',
+  blurOn: false, blur: 8,                 // 배경색 blur
+  backdropBlurOn: false, backdropBlur: 8, // 오버레이 blur
+};
+
+const state = {
+  set: 'A',                         // mobile pairing of Set 01
+  colors: { ...DEFAULT_COLORS },
+  logo: 'dark',                     // 로고 컬러: 'light' | 'dark'
+  view: 'default',                  // preview state: default / scroll / menu / search
+  mode: 'auto',                     // prototype: 'auto' C1 자동 보기 · 'screens' C2 화면별 보기
+  screen: 'default',                // C2: the screen picked in the preview
+  page: 'home-dark',
+};
+
+function tokenVars() {
+  const c = state.colors;
+  const vars = { '--logo-color': state.logo === 'light' ? '#ffffff' : '#1a1a1a', '--header-blur': (c.blurOn ? c.blur : 0) + 'px', '--backdrop-blur': (c.backdropBlurOn ? c.backdropBlur : 0) + 'px' };
+  for (const item of Object.values(ITEM)) vars['--' + item.token.replace('/default', '').replace('/', '-')] = c[item.key];
+  return vars;
+}
+
+const PAGES = {
+  'home-dark':  { fullBleed: true,  hero: { src: 'assets/hero-dark.jpg',  tone: 'dark',  sub: 'Less, but better', title: 'Crafted for Better Experience' } },
+  'home-light': { fullBleed: true,  hero: { src: 'assets/hero-snow.jpg', tone: 'light', sub: '', title: '' } },
+  'sub':        { fullBleed: false },
+};
+
+function cards(n) {
+  return Array.from({ length: n }, (_, i) =>
+    `<div class="card"><div class="ph"></div><div class="t">Product name ${i + 1}</div><div class="p">₩ 128,000</div></div>`).join('');
+}
+
+function pageHTML(key) {
+  const p = PAGES[key];
+  const hero = p.hero ? `
+    <section class="hero" data-tone="${p.hero.tone}">
+      <img src="${p.hero.src}" alt="">
+      <div class="hero-overlay"></div>
+      ${p.hero.title ? `<div class="hero-content"><p>${p.hero.sub}</p><h2>${p.hero.title}</h2></div>` : ''}
+      <div class="hero-dots"><i></i><i></i><i></i><i></i><i></i></div>
+    </section>` : `
+    <section class="section">
+      <div class="crumb">Home / Shop</div>
+      <h1 class="title">New Arrivals</h1>
+      <div class="grid">${cards(8)}</div>
+    </section>`;
+  return `${hero}
+    <section class="section"><h3>New Arrivals</h3><div class="grid">${cards(4)}</div></section>
+    <div class="band">Less, but better.</div>
+    <section class="section"><h3>Best Sellers</h3><div class="grid">${cards(8)}</div></section>`;
+}
+
+
+/* shared pane plumbing: colour tokens, page content, the search field */
+function basePane(node, width, height) {
+  const frame = node.querySelector('.frame');
+  const viewport = node.querySelector('.viewport');
+  const scroller = node.querySelector('.scroller');
+  const hdr = node.querySelector('.hdr');
+  const page = node.querySelector('.page');
+  viewport.style.setProperty('--vw', width + 'px');
+  new ResizeObserver(() => {
+    const scale = frame.clientWidth / width;
+    viewport.style.height = (height || frame.clientHeight / scale) + 'px';
+    viewport.style.transform = `scale(${scale})`;
+  }).observe(frame);
+
+  const host = node.querySelector('[data-sf-host]');
+  host.prepend(document.getElementById('sfTpl').content.firstElementChild.cloneNode(true));
+  const sf = host.querySelector('.sf');
+  const input = sf.querySelector('input');
+  input.placeholder = '검색어를 입력하세요';
+
+  return {
+    frame, scroller, hdr, page, host, input,
+    paint() {
+      frame.dataset.pair = state.set;
+      for (const [k, v] of Object.entries(tokenVars())) frame.style.setProperty(k, v);
+    },
+    // typing state: focus line, results, and a drawn cursor while a colour is being edited
+    paintSearch(caret) {
+      const typed = !!input.value.trim();
+      sf.classList.toggle('is-active', typed || document.activeElement === input);
+      host.classList.toggle('is-empty', !typed);
+      sf.querySelector('.sf-mirror b').textContent = input.value;
+      sf.classList.toggle('show-caret', caret);
+    },
+  };
+}
+
+/* ── Desktop: set01_header — hover Shop for the dropdown, click Search for the search screen ── */
+function createDesktop() {
+  const node = document.getElementById('desktopTpl').content.firstElementChild.cloneNode(true);
+  const p = basePane(node, DESKTOP_W, DESKTOP_H);
+  const { frame, scroller, hdr, page, input } = p;
+  const local = { open: false, search: false, forced: false, caret: false, scrolled: false };
+  const shop = hdr.querySelector('[data-dd]');
+
+  function render() {
+    p.paint();
+    hdr.classList.toggle('is-open', local.open && !local.search);
+    shop.classList.toggle('is-open', local.open && !local.search);
+    hdr.classList.toggle('is-search', local.search);
+    frame.classList.toggle('is-dimmed', local.open && !local.search);
+    p.paintSearch(local.caret);
+  }
+  // any real interaction ends an auto-shown state; hovering doesn't while the colour picker is open
+  function clearForced() {
+    if (!local.forced) return;
+    local.forced = false; local.caret = false;
+    viewReleased();
+  }
+  frame.addEventListener('pointerdown', clearForced, true);
+  hdr.addEventListener('mouseenter', () => { if (cp.el.hidden) clearForced(); });
+  shop.addEventListener('mouseenter', () => { if (!local.search && !local.forced) { local.open = true; render(); } });
+  hdr.querySelectorAll('.d-nav > :not([data-dd]), .d-util .hdr-item').forEach(el =>
+    el.addEventListener('mouseenter', () => { if (!local.forced && local.open) { local.open = false; render(); } }));
+  hdr.addEventListener('mouseleave', () => { if (!local.forced && local.open) { local.open = false; render(); } });
+
+  function setSearch(open) {
+    local.search = open; local.open = false; local.caret = false;
+    if (open) setTimeout(() => input.focus({ preventScroll: true }), 50);
+    else input.value = '';
+    render();
+  }
+  hdr.querySelector('[data-search]').addEventListener('click', () => setSearch(true));
+  hdr.querySelector('[data-close]').addEventListener('click', () => setSearch(false));
+  input.addEventListener('input', render);
+  input.addEventListener('focus', render);
+  input.addEventListener('blur', render);
+  input.addEventListener('keydown', e => { if (e.key === 'Escape') setSearch(false); });
+  scroller.addEventListener('scroll', () => { local.scrolled = scroller.scrollTop > 0; }, { passive: true });
+
+  return {
+    node, render,
+    setPage() { page.innerHTML = pageHTML(state.page); scroller.scrollTop = 0; render(); },
+    setView(view, opts = {}) {
+      Object.assign(local, { open: false, search: false, forced: view === 'menu' || view === 'search', caret: false });
+      scroller.scrollTop = view === 'scroll' ? SCROLL_Y : 0;
+      if (view === 'menu') local.open = true;
+      if (view === 'search') { local.search = true; local.caret = !opts.empty; }
+      input.value = view === 'search' && !opts.empty ? 'Product' : '';
+      render();
+    },
+  };
+}
+
+/* ── Mobile: mobileA / mobileB / mobileF header and expanded panel ── */
+function createMobile() {
+  const node = document.getElementById('mobileTpl').content.firstElementChild.cloneNode(true);
+  const p = basePane(node, MOBILE_W, MOBILE_H);
+  const { frame, scroller, hdr, page, host: panel, input } = p;
+  const local = { menu: false, search: false, depth: 1, expand: null, caret: false };
+
+  function render() {
+    p.paint();
+    hdr.classList.toggle('is-menu', local.menu);
+    hdr.classList.toggle('is-search', local.menu && local.search);
+    panel.classList.toggle('is-search-mode', local.search && state.set !== 'A'); // A searches inside the menu panel
+    panel.dataset.depth = local.depth;
+    panel.querySelectorAll('.acc').forEach(a => a.classList.toggle('is-open', a.dataset.acc === local.expand));
+    p.paintSearch(local.caret);
+  }
+  function setMenu(open, search = false) {
+    Object.assign(local, { menu: open, search: open && search, depth: 1, expand: null, caret: false });
+    if (!open || !search) input.value = '';
+    render();
+  }
+  node.querySelectorAll('[data-menu]').forEach(b => b.addEventListener('click', () => { setMenu(true); viewReleased(); }));
+  node.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => { setMenu(false); viewReleased(); }));
+  node.querySelectorAll('[data-msearch]').forEach(b => b.addEventListener('click', () => { setMenu(true, true); viewReleased(); }));
+  panel.querySelector('[data-to2]').addEventListener('click', () => { local.depth = 2; render(); });
+  panel.querySelector('[data-to1]').addEventListener('click', () => { local.depth = 1; render(); });
+  panel.querySelectorAll('[data-acc-toggle]').forEach(b => b.addEventListener('click', () => {
+    const k = b.closest('.acc').dataset.acc;
+    local.expand = local.expand === k ? null : k; render();
+  }));
+  input.addEventListener('input', () => { local.caret = false; render(); });
+  input.addEventListener('focus', render);
+  input.addEventListener('blur', render);
+
+  return {
+    node, render,
+    setPage() { page.innerHTML = pageHTML(state.page); scroller.scrollTop = 0; setMenu(false); },
+    setView(view, opts = {}) {
+      scroller.scrollTop = view === 'scroll' ? SCROLL_Y : 0;
+      // A has no separate search screen: its search field sits at the top of the menu panel
+      setMenu(view === 'menu' || view === 'search', view === 'search' && state.set !== 'A');
+      if (view === 'menu') { local.depth = opts.depth2 ? 2 : 1; local.expand = opts.expand ? 'shop' : null; }
+      if (view === 'search') { input.value = opts.empty ? '' : 'Product'; local.caret = !opts.empty; }
+      render();
+    },
+  };
+}
+
+/* ── Stage: desktop 1920 × 1080 and mobile 390 × 844, scaled to one shared height that fits ── */
+const SCROLL_Y = 400;
+const stage = document.getElementById('stage');
+const stageInner = document.getElementById('stageInner');
+const previews = document.getElementById('previews');
+const panes = [createDesktop(), createMobile()];
+panes.forEach(p => previews.appendChild(p.node));
+new ResizeObserver(() => {
+  const cs = getComputedStyle(stage);
+  const availW = stage.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const availH = stage.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)
+    - stageInner.querySelector('.stage-tools').offsetHeight - (parseFloat(getComputedStyle(stageInner).rowGap) || 0);
+  const gap = parseFloat(getComputedStyle(previews).columnGap) || 0;
+  const ratios = [DESKTOP_W / DESKTOP_H, MOBILE_W / MOBILE_H];
+  const h = Math.max(120, Math.floor(Math.min(availH, (availW - gap) / (ratios[0] + ratios[1]))));
+  let total = gap;
+  panes.forEach((p, i) => {
+    const w = Math.floor(h * ratios[i]);
+    total += w;
+    p.node.style.width = w + 'px';
+    p.node.querySelector('.frame').style.height = h + 'px';
+  });
+  stageInner.style.width = total + 'px';
+}).observe(stage);
+
+function renderAll() { panes.forEach(p => p.render()); }
+function setPageAll() { panes.forEach(p => { p.setPage(); p.setView(state.view); }); }
+
+// preview state, driven by "컬러 수정 중인 화면 자동 보기"
+function setView(view, opts) {
+  state.view = view;
+  panes.forEach(p => p.setView(view, opts));
+}
+// user interaction inside a preview ends a forced state
+function viewReleased() {
+  if (state.view === 'default' || state.view === 'scroll') return;
+  state.view = 'default';
+}
+
+/* ── Editor: colour items for the selected pairing ── */
+const itemsEl = document.getElementById('items');
+itemsEl.innerHTML = ITEMS.reduce((html, i) => {
+  if (i.group) return html + `${html ? '</div>' : ''}<div class="item-group"><h3>${i.group}</h3><p>${i.desc}</p>`;
+  if (i.divider) return html + '<hr class="cdivider">';
+  return html + `<div class="citem" data-key="${i.key}">
+    <button type="button" class="swatch checker" id="sw-${i.key}" aria-haspopup="dialog" aria-expanded="false" aria-label="${i.label} 색상 선택" title="${i.token}"><i></i></button>
+    <label for="sw-${i.key}">${i.label}${BLUR[i.key] ? '<span class="tag" hidden></span>' : ''}</label>
+    <span class="dev" hidden></span>
+  </div>`;
+}, '') + '</div>';
+
+const coach = document.getElementById('autoShowTip');
+const dismissCoach = () => { coach.hidden = true; };
+const showCoach = () => { coach.hidden = false; };
+coach.querySelector('.coach-close').addEventListener('click', dismissCoach);
+document.getElementById('autoShow').addEventListener('change', dismissCoach);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') dismissCoach(); });
+
+// show the screen where the item's colour is used
+function autoShow(key) {
+  const item = ITEM[key];
+  // C2 never changes the screen: it only shows the item's detail state on the screen already picked
+  if (state.mode === 'screens') { if (item.opts && item.view === state.screen) setView(state.screen, item.opts); return; }
+  if (!document.getElementById('autoShow').checked) return;
+  setView(item.view, item.opts || {});
+}
+
+/* ── colour picker (HSV + alpha), opened from a swatch ── */
+const cp = {
+  el: document.getElementById('cpick'), key: null, obj: null, h: 0, s: 0, v: 0, a: 1, // obj: state.colors
+  sv: document.getElementById('cpSV'), hue: document.getElementById('cpHue'), alpha: document.getElementById('cpAlpha'),
+  hex: document.getElementById('cpHex'), pct: document.getElementById('cpPct'),
+};
+const clamp = (n, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, n));
+function hexToRgba(hex) {
+  let h = hex.slice(1);
+  if (h.length === 3) h = [...h].map(c => c + c).join('');
+  const n = i => parseInt(h.slice(i, i + 2), 16);
+  return { r: n(0), g: n(2), b: n(4), a: h.length === 8 ? n(6) / 255 : 1 };
+}
+function rgbToHsv({ r, g, b }) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), d = max - Math.min(r, g, b);
+  let h = 0;
+  if (d) h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return { h: (h * 60 + 360) % 360, s: max ? d / max : 0, v: max };
+}
+function hsvToRgb(h, s, v) {
+  const f = n => { const k = (n + h / 60) % 6; return Math.round((v - v * s * Math.max(0, Math.min(k, 4 - k, 1))) * 255); };
+  return { r: f(5), g: f(3), b: f(1) };
+}
+const hx = n => n.toString(16).padStart(2, '0');
+const cpRgbHex = () => { const { r, g, b } = hsvToRgb(cp.h, cp.s, cp.v); return '#' + hx(r) + hx(g) + hx(b); };
+const cpValue = () => cpRgbHex() + (cp.a < 1 ? hx(Math.round(cp.a * 255)) : '');
+
+function cpPaint(skip) {
+  const solid = cpRgbHex();
+  cp.el.style.setProperty('--h', cp.h);
+  cp.el.style.setProperty('--solid', solid);
+  const svh = document.getElementById('cpSVh');
+  svh.style.left = cp.s * 100 + '%'; svh.style.top = (1 - cp.v) * 100 + '%'; svh.style.setProperty('--c', solid);
+  const hh = document.getElementById('cpHueh');
+  hh.style.left = cp.h / 360 * 100 + '%'; hh.style.setProperty('--c', `hsl(${cp.h} 100% 50%)`);
+  const ah = document.getElementById('cpAlphah');
+  ah.style.left = cp.a * 100 + '%'; ah.style.setProperty('--c', solid);
+  if (skip !== cp.hex) { cp.hex.value = solid.slice(1).toUpperCase(); cp.hex.removeAttribute('aria-invalid'); }
+  if (skip !== cp.pct) cp.pct.value = Math.round(cp.a * 100);
+  const blur = document.getElementById('cpBlur');
+  const bk = BLUR[cp.key];
+  blur.hidden = !bk;
+  if (bk) {
+    const on = !!cp.obj[bk.on], v = cp.obj[bk.px] || 8;
+    document.querySelector('label[for="cpBlurOn"]').textContent = bk.label;
+    document.getElementById('cpBlurHint').textContent = bk.hint;
+    document.getElementById('cpBlurOn').checked = on;
+    document.getElementById('cpBlurAmount').hidden = !on;
+    document.getElementById('cpBlurRange').value = v;
+    document.getElementById('cpBlurOut').textContent = v + 'px';
+  }
+}
+function cpCommit(skip) {
+  cp.obj[cp.key] = cpValue();
+  cpPaint(skip); syncEditor(); renderAll();
+}
+function openPicker(key, btn) {
+  if (cp.key === key && !cp.el.hidden) return closePicker();
+  closePicker();
+  cp.key = key; cp.obj = state.colors;
+  const rgba = hexToRgba(cp.obj[key]);
+  Object.assign(cp, rgbToHsv(rgba), { a: rgba.a });
+  btn.setAttribute('aria-expanded', 'true');
+  cp.el.hidden = false;
+  cpPaint();
+  // open just right of the editor panel, level with the swatch, so the other rows stay visible
+  const r = btn.getBoundingClientRect(), h = cp.el.offsetHeight;
+  cp.el.style.left = (document.querySelector('.editor').getBoundingClientRect().right + 8) + 'px';
+  cp.el.style.top = clamp(r.top - 12, 8, innerHeight - h - 8) + 'px';
+  autoShow(key);
+}
+function closePicker() {
+  if (cp.el.hidden) return;
+  cp.el.hidden = true;
+  document.querySelectorAll('.swatch[aria-expanded="true"]').forEach(b => b.setAttribute('aria-expanded', 'false'));
+  cp.key = null; cp.obj = null;
+}
+function dragOn(el, onMove) {
+  el.addEventListener('pointerdown', e => {
+    el.setPointerCapture(e.pointerId);
+    const move = ev => { const r = el.getBoundingClientRect(); onMove(clamp((ev.clientX - r.left) / r.width), clamp((ev.clientY - r.top) / r.height)); };
+    move(e);
+    el.onpointermove = move;
+    el.onpointerup = () => { el.onpointermove = null; };
+  });
+}
+dragOn(cp.sv, (x, y) => { cp.s = x; cp.v = 1 - y; cpCommit(); });
+dragOn(cp.hue, x => { cp.h = x * 360; cpCommit(); });
+dragOn(cp.alpha, x => { cp.a = Math.round(x * 100) / 100; cpCommit(); });
+cp.hex.addEventListener('input', () => {
+  const v = cp.hex.value.trim().replace(/^#/, '');
+  const ok = /^([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v);
+  cp.hex.setAttribute('aria-invalid', String(!ok));
+  if (!ok) return;
+  Object.assign(cp, rgbToHsv(hexToRgba('#' + v)));
+  cpCommit(cp.hex);
+});
+cp.pct.addEventListener('input', () => {
+  const n = parseInt(cp.pct.value, 10);
+  if (Number.isNaN(n)) return;
+  cp.a = clamp(n / 100);
+  cpCommit(cp.pct);
+});
+cp.pct.addEventListener('blur', () => cpPaint());
+cp.hex.addEventListener('blur', () => cpPaint());
+document.getElementById('cpBlurOn').addEventListener('change', e => {
+  cp.obj[BLUR[cp.key].on] = e.target.checked;
+  cpPaint(); syncEditor(); renderAll();
+});
+document.getElementById('cpBlurRange').addEventListener('input', e => {
+  cp.obj[BLUR[cp.key].px] = +e.target.value;
+  cpPaint(); syncEditor(); renderAll();
+});
+document.addEventListener('pointerdown', e => {
+  if (!cp.el.hidden && !cp.el.contains(e.target) && !e.target.closest('.swatch')) closePicker();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePicker(); });
+document.querySelector('.editor').addEventListener('scroll', closePicker);
+
+
+itemsEl.addEventListener('click', e => {
+  const sw = e.target.closest('.swatch');
+  if (sw) openPicker(sw.closest('.citem').dataset.key, sw);
+});
+
+function syncEditor() {
+  const pair = state.set, c = state.colors;
+  itemsEl.querySelectorAll('.citem').forEach(row => {
+    const item = ITEM[row.dataset.key], on = item.on[pair];
+    row.hidden = !on || (state.mode === 'screens' && !onScreen(item, state.screen));
+    row.querySelector('.swatch i').style.setProperty('--v', c[row.dataset.key]);
+    const dev = row.querySelector('.dev');
+    dev.hidden = !on || on === 'both';
+    dev.textContent = DEV_LABEL[on] || '';
+  });
+  // a group with nothing to edit for this pairing goes too
+  itemsEl.querySelectorAll('.item-group').forEach(g => { g.hidden = !g.querySelector('.citem:not([hidden])'); });
+  // the 검색창 / 검색 결과 line only while both sides have items
+  itemsEl.querySelectorAll('.cdivider').forEach(hr => {
+    const has = dir => { for (let el = hr[dir]; el; el = el[dir]) if (!el.hidden) return true; return false; };
+    hr.hidden = !has('previousElementSibling') || !has('nextElementSibling');
+  });
+  const screens = state.mode === 'screens';
+  document.getElementById('itemsNote').textContent = (screens
+    ? '미리보기 위에서 화면을 고르면 그 화면에 쓰이는 컬러만 보여요.'
+    : '항목을 누르면 그 컬러가 쓰이는 화면을 미리보기에서 보여줘요.') + ' PC · 모바일 표시가 있는 항목은 그 기기에만 적용돼요.';
+  document.getElementById('autoShowWrap').hidden = screens;
+  document.getElementById('screenSeg').hidden = !screens;
+  document.querySelectorAll('#screenSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.screen === state.screen)));
+  document.querySelectorAll('.version-switch button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode)));
+  for (const [key, bk] of Object.entries(BLUR)) {
+    const tag = itemsEl.querySelector(`[data-key="${key}"] .tag`);
+    tag.hidden = !c[bk.on];
+    tag.textContent = `블러 ${c[bk.px]}`;
+  }
+  document.querySelectorAll('#logoSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.logo === state.logo)));
+}
+
+document.getElementById('logoSeg').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  state.logo = b.dataset.logo;
+  closePicker(); syncEditor(); renderAll();
+});
+
+/* ── 헤더 디자인 선택: Set 01 with each mobile pairing ── */
+const dialog = document.getElementById('designDialog');
+const setsEl = document.getElementById('sets');
+let pendingSet = state.set;
+setsEl.innerHTML = `<section class="set-group"><h3>Set 01</h3><div class="sets">${Object.entries(PAIRS).map(([k, p]) => `
+  <button type="button" class="set" data-set="${k}" aria-pressed="false">
+    <div class="set-thumb"><i></i><i></i><b></b><i class="r"></i></div>
+    <span>Set 01 + ${k}</span>
+    <small>${p.desc}</small>
+    <small class="set-count">컬러 항목 ${itemCount(k)}개</small>
+  </button>`).join('')}</div></section>`;
+const syncPending = () => {
+  setsEl.querySelectorAll('.set').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.set === pendingSet)));
+  document.getElementById('applyDesign').disabled = pendingSet === state.set;
+};
+setsEl.addEventListener('click', e => {
+  const b = e.target.closest('.set');
+  if (!b) return;
+  pendingSet = b.dataset.set; syncPending();
+});
+setsEl.addEventListener('dblclick', e => { if (e.target.closest('.set')) dialog.close('apply'); });
+document.getElementById('openDesigns').addEventListener('click', () => {
+  pendingSet = state.set; syncPending(); dialog.showModal();
+});
+dialog.addEventListener('close', () => {
+  if (dialog.returnValue !== 'apply' || pendingSet === state.set) return;
+  state.set = pendingSet;
+  closePicker(); syncEditor();
+  setView(state.mode === 'screens' ? state.screen : 'default');
+});
+// backdrop click closes without applying
+dialog.addEventListener('click', e => { if (e.target === dialog) dialog.close('cancel'); });
+
+/* ── prototype: C1 자동 보기 · C2 화면별 보기 ── */
+document.querySelector('.version-switch').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b || b.dataset.mode === state.mode) return;
+  state.mode = b.dataset.mode;
+  closePicker(); dismissCoach(); syncEditor();
+  setView(state.mode === 'screens' ? state.screen : 'default');
+});
+document.getElementById('screenSeg').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  state.screen = b.dataset.screen;
+  closePicker(); syncEditor();
+  setView(state.screen);
+});
+
+document.getElementById('page').addEventListener('change', e => {
+  state.page = e.target.value;
+  setPageAll();
+});
+
+/* ── Editor depths: menu list → 컬러 (others are placeholders) ── */
+function openDepth(id, title) {
+  document.querySelectorAll('.editor .depth').forEach(d => d.classList.toggle('is-hidden', d.id !== id));
+  document.body.dataset.depth = id;
+  if (title) document.getElementById('otherTitle').textContent = title;
+  document.querySelector('.editor').scrollTop = 0;
+}
+document.querySelectorAll('.menu-item').forEach(b => b.addEventListener('click', () => {
+  if (b.dataset.depth === 'color') { openDepth('depthColor'); if (state.mode === 'auto') showCoach(); }
+  else openDepth('depthOther', b.querySelector('span').textContent);
+}));
+document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', () => {
+  dismissCoach(); closePicker();
+  openDepth('depthRoot');
+}));
+
+syncEditor();
+setPageAll();
+</script>
+</body>
+</html>
