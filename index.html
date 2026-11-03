@@ -617,6 +617,7 @@
   .m-res ul { margin: 18px 0 0; padding: 0; list-style: none; color: var(--header-search-result); }
   .m-res li { padding: 9px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .m-panel.is-empty .m-res { display: none; }
+  .m-res .res-link { display: none; } /* mobile search has no 전체보기 */
   .m-item {
     display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px 0;
     border: 0; background: none; color: inherit; font: inherit; text-align: left; text-transform: capitalize; cursor: pointer;
@@ -1046,7 +1047,7 @@ const ITEMS = [
   { sub: '검색 결과' },
   { key: 'resultLabel', token: 'header-search/result-label', label: '"검색 결과" 라벨', on: on({ A: 'pc', B: 'both', F: 'both' }, { A: 'pc', B: 'both', F: 'both', I: 'both' }), view: 'search' },
   { key: 'result', token: 'header-search/result', label: '검색 결과 텍스트', on: on({ B: 'm', F: 'm' }, { A: 'pc', B: 'both', F: 'both', I: 'both' }), view: 'search' },
-  { key: 'resultLink', token: 'header-search/result-link', label: '전체보기 버튼', on: on({ A: 'pc', B: 'both', F: 'both' }), view: 'search' },
+  { key: 'resultLink', token: 'header-search/result-link', label: '전체보기 버튼', on: on({ A: 'pc', B: 'pc', F: 'pc' }), view: 'search' },
   { key: 'productName', token: 'header-search/product-name', label: '상품명', on: on({ A: 'pc', B: 'pc', F: 'pc' }), view: 'search' },
   { key: 'productPrice', token: 'header-search/product-price', label: '판매가', on: on({ A: 'pc', B: 'pc', F: 'pc' }), view: 'search' },
   { key: 'productPriceOriginal', token: 'header-search/product-price-original', label: '원가', on: on({ A: 'pc', B: 'pc', F: 'pc' }), view: 'search' },
