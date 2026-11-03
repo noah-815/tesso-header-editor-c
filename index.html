@@ -85,7 +85,7 @@
   .dlg-body { padding: 16px 24px 20px; max-height: 68vh; overflow-y: auto; }
   .set-group + .set-group { margin-top: 20px; }
   .set-group h3 { margin: 0 0 10px; font-size: 13px; font-weight: 600; }
-  .dlg-body .sets { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .dlg-body .sets { grid-template-columns: repeat(4, 1fr); gap: 12px; }
   .dlg-body .set { padding: 10px; border-radius: 10px; }
   .dlg-body .set-thumb { height: 72px; border-radius: 6px; padding: 0 10px; gap: 5px; align-items: flex-start; padding-top: 12px; }
   .dlg-body .set-thumb.inset { padding: 8px; }
@@ -470,6 +470,7 @@
   .citem .tag { white-space: nowrap; font: 500 10.5px/1 Inter, sans-serif; color: var(--ui-sub); background: #f4f4f5; border-radius: 4px; padding: 3px 5px; }
   .group-divider { height: 1px; margin: 18px -20px 0; border: 0; background: var(--ui-line); }
   .logo-row > span { font-size: 12.5px; font-weight: 600; }
+  .logo-row[hidden] { display: none; }
   .set-thumb.pair { position: relative; }
   .set-count { display: block; margin-top: 4px; font-size: 11px; color: var(--ui-accent); font-weight: 600; }
 
@@ -577,6 +578,8 @@
   .frame[data-pair="B"] .hdr-logo { position: static; transform: none; }
   /* which buttons each pairing shows */
   .frame:not([data-pair="A"]) .only-a, .frame:not([data-pair="B"]) .only-b, .frame:not([data-pair="F"]) .only-f,
+  .frame:not([data-pair="I"]) .only-i, .frame:not([data-pair="B"]):not([data-pair="I"]) .only-bi,
+  .frame:not([data-pair="F"]):not([data-pair="I"]) .only-fi,
   .frame[data-pair="A"] .not-a { display: none !important; }
   .mb-close { display: none; }
   .frame[data-pair="B"] .m-left { display: none; }
@@ -663,6 +666,49 @@
   .m .title { font-size: 22px; margin-bottom: 20px; }
   .m .grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .m .band { padding: 64px 16px; font-size: 18px; }
+
+  /* ── Set 05 / 06: the header can sit over the hero (header-on-media) ── */
+  .frame.is-overlap .hdr { margin-bottom: calc(-1 * var(--hdr-h)); }
+  .hdr.on-media .hdr-bar {
+    background: var(--header-on-media-background); color: var(--header-on-media-nav);
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+  }
+  .hdr.on-media .hdr-logo { background: var(--logo-media-color); }
+  /* set05_header: menu left, logo centred, utility right */
+  .frame[data-desk="05"] .hdr-logo { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+  .frame[data-desk="05"] .d-nav { position: static; transform: none; margin-left: -8px; gap: 4px; }
+  .frame[data-desk="05"] .d-util { margin-left: auto; }
+  /* set05_expanded: a full-width panel under the header */
+  .frame[data-desk="05"] .hdr-item[data-dd] { position: static; }
+  .frame[data-desk="05"] .dd { right: 0; padding: 12px var(--pad-x) 28px; }
+  .frame[data-desk="05"] .dd a { padding: 7px 0; }
+  /* set05_searchBar + set05_searchResult: the header stays, a panel opens under it and the page is dimmed */
+  .frame[data-desk="05"] .hdr.is-search .d-nav, .frame[data-desk="05"] .hdr.is-search .d-util { display: flex; }
+  .frame[data-desk="05"] .hdr.is-search .d-close { display: none; }
+  .frame[data-desk="05"] .hdr.is-search [data-search] > span { text-decoration: underline; text-underline-offset: 2px; }
+  .frame[data-desk="05"] .d-search { height: auto; padding: 20px var(--pad-x) 32px; }
+  .frame[data-desk="05"] .d-search .res { margin-top: 28px; }
+  .frame[data-desk="05"] .res-link, .frame[data-desk="05"] .d-grid { display: none; }
+  .d-list { display: none; margin: 14px 0 0; padding: 0; list-style: none; color: var(--header-search-result); }
+  .d-list li { padding: 6px 0; }
+  .frame[data-desk="05"] .d-list { display: block; }
+
+  /* mobileI: hamburger left, logo centred, search · bag right; the menu is a drawer over a dimmed page */
+  .m-dim {
+    position: absolute; left: 0; top: 0; width: 100%; height: 844px; z-index: 4; background: var(--header-backdrop);
+    -webkit-backdrop-filter: blur(var(--backdrop-blur, 0px)); backdrop-filter: blur(var(--backdrop-blur, 0px));
+    opacity: 0; pointer-events: none; transition: opacity .25s ease;
+  }
+  .frame[data-pair="I"] .hdr.is-menu:not(.is-search) .m-dim { opacity: 1; pointer-events: auto; }
+  .frame[data-pair="I"] .m-panel:not(.is-search-mode) { top: 0; right: auto; width: 330px; height: 844px; z-index: 5; padding-top: 0; }
+  .m-dhead { display: flex; align-items: center; height: var(--hdr-h); color: var(--header-nav); flex: none; }
+  .m-panel.is-search-mode .m-dhead { display: none !important; }
+  .frame[data-pair="I"] .hdr.is-menu:not(.is-search) .mb-open { display: flex; }
+  .frame[data-pair="I"] .hdr.is-menu:not(.is-search) .mb-close { display: none; }
+  .frame[data-pair="I"] .hdr.is-search .m-left, .frame[data-pair="I"] .hdr.is-search .hdr-logo,
+  .frame[data-pair="I"] .hdr.is-search .m-right > :not(.mb-close) { display: none; }
+  .frame[data-pair="I"] .hdr.is-search .m-right .mb-close { display: flex; }
+  .frame[data-pair="I"] .hdr.is-search .hdr-bar { justify-content: flex-end; }
 </style>
 </head>
 <body data-depth="depthRoot">
@@ -722,6 +768,13 @@
     <div class="logo-row">
       <span id="logoLabel">로고 컬러</span>
       <div class="seg logo-seg" id="logoSeg" role="group" aria-labelledby="logoLabel">
+        <button type="button" data-logo="light">밝은</button>
+        <button type="button" data-logo="dark">어두운</button>
+      </div>
+    </div>
+    <div class="logo-row" id="logoMediaRow" hidden>
+      <span id="logoMediaLabel">로고 컬러 (미디어 위)</span>
+      <div class="seg logo-seg" id="logoMediaSeg" role="group" aria-labelledby="logoMediaLabel">
         <button type="button" data-logo="light">밝은</button>
         <button type="button" data-logo="dark">어두운</button>
       </div>
@@ -805,6 +858,7 @@
                 <div><div class="ph p3"></div><p class="nm">Square Moduler Coffee Table</p><p class="pr">250,000원</p></div>
                 <div><div class="ph p4"></div><p class="nm">Handcrafted Solid Oak Object Natural Finish</p><p class="pr">90,000원</p></div>
               </div>
+              <ul class="d-list"><li>Product Name</li><li>CH 03 Essence Lounge Desert Taupe</li><li>Square Moduler Coffee Table</li><li>Handcrafted Solid Oak Object Natural Finish</li></ul>
             </div>
           </div>
         </header>
@@ -826,19 +880,21 @@
                 <div class="m-left">
                   <button type="button" class="mb mb-open only-a" data-menu>Menu</button>
                   <button type="button" class="mb mb-close only-a" data-close>Close</button>
-                  <button type="button" class="mb mb-open only-f" data-menu aria-label="메뉴"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M3.5 6h13M3.5 10h13M3.5 14h13"/></svg></button>
+                  <button type="button" class="mb mb-open only-fi" data-menu aria-label="메뉴"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M3.5 6h13M3.5 10h13M3.5 14h13"/></svg></button>
                   <button type="button" class="mb mb-close only-f" data-close aria-label="닫기"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="m5 5 10 10M15 5 5 15"/></svg></button>
                 </div>
                 <div class="hdr-logo" role="img" aria-label="BRAND"></div>
                 <div class="m-right">
                   <a class="mb only-a">Bag (0)</a>
-                  <button type="button" class="mb only-b" data-msearch aria-label="검색"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="9" cy="9" r="5.5"/><path d="m13 13 3.5 3.5"/></svg></button>
+                  <button type="button" class="mb only-bi" data-msearch aria-label="검색"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="9" cy="9" r="5.5"/><path d="m13 13 3.5 3.5"/></svg></button>
                   <a class="mb not-a" aria-label="장바구니"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M4.5 7h11l-.8 9.5H5.3L4.5 7Z"/><path d="M7.5 7V5.5a2.5 2.5 0 0 1 5 0V7"/></svg></a>
                   <button type="button" class="mb mb-open only-b" data-menu aria-label="메뉴"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M3.5 6h13M3.5 10h13M3.5 14h13"/></svg></button>
                   <button type="button" class="mb mb-close not-a" data-close aria-label="닫기"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="m5 5 10 10M15 5 5 15"/></svg></button>
                 </div>
               </div>
+              <div class="m-dim" data-close></div>
               <div class="m-panel is-empty" data-depth="1" data-sf-host>
+                <div class="m-dhead only-i"><button type="button" class="mb" data-close aria-label="닫기"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="m5 5 10 10M15 5 5 15"/></svg></button></div>
                 <div class="m-res">
                   <div class="res-head"><span class="res-label">검색 결과</span><a class="res-link">전체보기</a></div>
                   <ul><li>Product Name</li><li>CH 03 Essence Lounge Desert Taupe</li><li>Search Result Max 1line Search Result Max 1line Search Result</li><li>Handcrafted Solid Oak Object Natural Finish</li></ul>
@@ -910,26 +966,43 @@
 const DESKTOP_W = 1920, DESKTOP_H = 1080;
 const MOBILE_W = 390, MOBILE_H = 844;
 
-/* Set 01 pairs with mobile A · B · F. The desktop header is the same for all three; the mobile header,
-   and so the colour items the owner can edit, differ — Figma "유저 컬러 편집 항목 · Set 01 페어링별". */
-const PAIRS = {
-  A: { desc: '모바일: 메뉴 버튼 · 패널형' },
-  B: { desc: '모바일: 아이콘 · 아코디언형' },
-  F: { desc: '모바일: 햄버거 · 아코디언형' },
+/* Two desktop headers, each paired with its own mobile headers. The colour items the owner can edit differ per
+   pairing — Figma "유저 컬러 편집 항목 · Set 01 페어링별" and "· Set 05/06 페어링별". Set 05 / 06 can sit over the hero. */
+const DESKS = {
+  '01': { name: 'Set 01', overlap: false },
+  '05': { name: 'Set 05 / 06', overlap: true },
 };
-// where each item applies, per pairing: 'both' PC·모바일 · 'pc' · 'm' 모바일 · missing: not shown
-const ALL = { A: 'both', B: 'both', F: 'both' };
-const PC = { A: 'pc', B: 'pc', F: 'pc' };
+const PAIRS = {
+  '01': {
+    A: { desc: '모바일: 메뉴 버튼 · 패널형' },
+    B: { desc: '모바일: 아이콘 · 아코디언형' },
+    F: { desc: '모바일: 햄버거 · 아코디언형' },
+  },
+  '05': {
+    A: { desc: '모바일: 메뉴 버튼 · 패널형' },
+    B: { desc: '모바일: 아이콘 · 아코디언형' },
+    F: { desc: '모바일: 햄버거 · 아코디언형' },
+    I: { desc: '모바일: 햄버거 · 드로어형' },
+  },
+};
+// where each item applies, per pairing ('01A', '05I', …): 'both' PC·모바일 · 'pc' · 'm' 모바일 · missing: not shown
+const on = (s01 = {}, s05 = {}) => Object.fromEntries([
+  ...Object.entries(s01).map(([k, v]) => ['01' + k, v]), ...Object.entries(s05).map(([k, v]) => ['05' + k, v])]);
+const BOTH01 = { A: 'both', B: 'both', F: 'both' }, BOTH05 = { A: 'both', B: 'both', F: 'both', I: 'both' };
+const ALL = on(BOTH01, BOTH05);
 const ITEMS = [
-  // labelBy: a pairing-specific name — A's mobile header is text only (Menu · Bag), B · F use icons
+  // labelBy: a mobile-specific name — A's mobile header is text only (Menu · Bag), B · F · I use icons
+  { group: '헤더 겹침', desc: '헤더가 미디어 위에 겹쳐 있을 때 쓰는 컬러예요. 호버·스크롤 시에는 헤더 컬러가 적용돼요.' },
+  { key: 'mediaBackground', token: 'header-on-media/background', label: '배경색 (미디어 위)', on: on({}, BOTH05), view: 'default', opts: { media: true } },
+  { key: 'mediaNav', token: 'header-on-media/nav', label: '상단 메뉴·아이콘 (미디어 위)', labelBy: { A: '상단 메뉴 (미디어 위)' }, on: on({}, BOTH05), view: 'default', opts: { media: true } },
   { group: '헤더', desc: '헤더 바에 쓰는 컬러예요. 배경색은 펼친 메뉴와 검색 화면에도 함께 적용돼요.' },
-  { key: 'background', token: 'header/background', label: '배경색', on: ALL, view: 'default', screens: ['default', 'menu', 'search'] },
-  { key: 'nav', token: 'header/nav', label: '상단 메뉴·아이콘', labelBy: { A: '상단 메뉴' }, on: ALL, view: 'default', screens: ['default', 'menu'] },
-  { group: '펼친 메뉴', desc: '메뉴를 펼쳤을 때 안쪽에 쓰는 컬러예요.' },
+  { key: 'background', token: 'header/background', label: '배경색', on: ALL, view: 'default', opts: { solid: true }, screens: ['default', 'menu', 'search'] },
+  { key: 'nav', token: 'header/nav', label: '상단 메뉴·아이콘', labelBy: { A: '상단 메뉴' }, on: ALL, view: 'default', opts: { solid: true }, screens: ['default', 'menu'] },
+  { group: '펼친 메뉴', desc: '메뉴를 펼쳤을 때 쓰는 컬러예요.' },
   { key: 'menuNav', token: 'header-menu/nav', label: '메뉴 텍스트', on: ALL, view: 'menu' },
-  { key: 'menuExpand', token: 'header-menu/expand-icon', label: '펼치기 아이콘 (+ / −)', on: { B: 'm', F: 'm' }, view: 'menu', opts: { expand: true } },
-  { key: 'menuBack', token: 'header-menu/back', label: '뒤로가기 버튼', on: { A: 'm' }, view: 'menu', opts: { depth2: true } },
-  { key: 'menuUtility', token: 'header-menu/utility', label: '유틸리티 (로그인·마이페이지)', on: { A: 'm', B: 'm', F: 'm' }, view: 'menu' },
+  { key: 'menuExpand', token: 'header-menu/expand-icon', label: '펼치기 아이콘 (+ / −)', on: on({ B: 'm', F: 'm' }, { B: 'm', F: 'm', I: 'm' }), view: 'menu', opts: { expand: true } },
+  { key: 'menuBack', token: 'header-menu/back', label: '뒤로가기 버튼', on: on({ A: 'm' }, { A: 'm' }), view: 'menu', opts: { depth2: true } },
+  { key: 'menuUtility', token: 'header-menu/utility', label: '유틸리티 (로그인·마이페이지)', on: on({ A: 'm', B: 'm', F: 'm' }, { A: 'm', B: 'm', F: 'm', I: 'm' }), view: 'menu' },
   { group: '검색', desc: '검색을 열었을 때 쓰는 컬러예요.' },
   { key: 'borderInactive', token: 'header-search/border-inactive', label: '검색창 선', on: ALL, view: 'search', opts: { empty: true } },
   { key: 'borderActive', token: 'header-search/border-active', label: '검색창 선 (입력 중)', on: ALL, view: 'search' },
@@ -938,14 +1011,14 @@ const ITEMS = [
   { key: 'cursor', token: 'header-search/cursor', label: '커서', on: ALL, view: 'search' },
   { key: 'searchIcon', token: 'header-search/icon', label: '검색 아이콘', on: ALL, view: 'search', opts: { empty: true } },
   { divider: true }, // 검색창 above, 검색 결과 below
-  { key: 'resultLabel', token: 'header-search/result-label', label: '"검색 결과" 라벨', on: { A: 'pc', B: 'both', F: 'both' }, view: 'search' },
-  { key: 'result', token: 'header-search/result', label: '검색 결과 텍스트', on: { B: 'm', F: 'm' }, view: 'search' },
-  { key: 'resultLink', token: 'header-search/result-link', label: '전체보기 버튼', on: { A: 'pc', B: 'both', F: 'both' }, view: 'search' },
-  { key: 'productName', token: 'header-search/product-name', label: '상품명', on: PC, view: 'search' },
-  { key: 'productPrice', token: 'header-search/product-price', label: '판매가', on: PC, view: 'search' },
-  { key: 'productPriceOriginal', token: 'header-search/product-price-original', label: '원가', on: PC, view: 'search' },
+  { key: 'resultLabel', token: 'header-search/result-label', label: '"검색 결과" 라벨', on: on({ A: 'pc', B: 'both', F: 'both' }, { A: 'pc', B: 'both', F: 'both', I: 'both' }), view: 'search' },
+  { key: 'result', token: 'header-search/result', label: '검색 결과 텍스트', on: on({ B: 'm', F: 'm' }, { A: 'pc', B: 'both', F: 'both', I: 'both' }), view: 'search' },
+  { key: 'resultLink', token: 'header-search/result-link', label: '전체보기 버튼', on: on({ A: 'pc', B: 'both', F: 'both' }), view: 'search' },
+  { key: 'productName', token: 'header-search/product-name', label: '상품명', on: on({ A: 'pc', B: 'pc', F: 'pc' }), view: 'search' },
+  { key: 'productPrice', token: 'header-search/product-price', label: '판매가', on: on({ A: 'pc', B: 'pc', F: 'pc' }), view: 'search' },
+  { key: 'productPriceOriginal', token: 'header-search/product-price-original', label: '원가', on: on({ A: 'pc', B: 'pc', F: 'pc' }), view: 'search' },
   { group: 'backdrop', desc: '메뉴를 펼쳤을 때 뒤쪽 화면을 덮는 컬러예요.' },
-  { key: 'backdrop', token: 'header-backdrop/default', label: '오버레이', on: PC, view: 'menu' },
+  { key: 'backdrop', token: 'header-backdrop/default', label: '오버레이', on: on({ A: 'pc', B: 'pc', F: 'pc' }, { A: 'pc', B: 'pc', F: 'pc', I: 'both' }), view: 'menu' },
 ];
 // 화면별 보기: an item is listed on its own screen, plus wherever else Figma marks it (screens)
 const onScreen = (item, screen) => (item.screens || [item.view]).includes(screen);
@@ -956,10 +1029,14 @@ const BLUR = {
   background: { on: 'blurOn', px: 'blur', label: '배경 블러', hint: '배경 불투명도를 100% 미만으로 낮추면 헤더 뒤 콘텐츠가 흐리게 비쳐 보여요.' },
   backdrop: { on: 'backdropBlurOn', px: 'backdropBlur', label: '블러', hint: '메뉴를 펼쳤을 때 오버레이 뒤의 화면이 흐리게 보여요.' },
 };
-const itemCount = pair => ITEMS.filter(i => i.key && i.on[pair]).length;
+const itemCount = key => ITEMS.filter(i => i.key && i.on[key]).length;
+const pairKey = () => state.desk + state.set;
+// the header sits over the hero: Set 05 / 06 on a page that has one
+const overlaps = () => DESKS[state.desk].overlap && !!PAGES[state.page].hero;
 
 // starting colours: the Base scheme of the earlier editors
 const DEFAULT_COLORS = {
+  mediaBackground: '#ffffff00', mediaNav: '#ffffff',
   background: '#ffffff', nav: '#1a1a1a',
   menuNav: '#1a1a1a', menuUtility: '#5e5b57', menuBack: '#5e5b57', menuExpand: '#1a1a1a',
   borderInactive: '#e4e1dc', borderActive: '#97938d', placeholder: '#97938d', input: '#1a1a1a', cursor: '#1a1a1a',
@@ -971,9 +1048,11 @@ const DEFAULT_COLORS = {
 };
 
 const state = {
-  set: 'A',                         // mobile pairing of Set 01
+  desk: '01',                       // desktop header: '01' | '05' (Set 05 / 06)
+  set: 'A',                         // its mobile pairing
   colors: { ...DEFAULT_COLORS },
   logo: 'dark',                     // 로고 컬러: 'light' | 'dark'
+  logoMedia: 'light',               // 로고 컬러 (미디어 위), Set 05 / 06 only
   view: 'default',                  // preview state: default / scroll / menu / search
   mode: 'screens',                  // prototype: 'screens' C2 화면별 보기 (default) · 'auto' C1 자동 보기
   screen: 'default',                // C2: the screen picked in the preview
@@ -982,7 +1061,7 @@ const state = {
 
 function tokenVars() {
   const c = state.colors;
-  const vars = { '--logo-color': state.logo === 'light' ? '#ffffff' : '#1a1a1a', '--header-blur': (c.blurOn ? c.blur : 0) + 'px', '--backdrop-blur': (c.backdropBlurOn ? c.backdropBlur : 0) + 'px' };
+  const vars = { '--logo-color': state.logo === 'light' ? '#ffffff' : '#1a1a1a', '--logo-media-color': state.logoMedia === 'light' ? '#ffffff' : '#1a1a1a', '--header-blur': (c.blurOn ? c.blur : 0) + 'px', '--backdrop-blur': (c.backdropBlurOn ? c.backdropBlur : 0) + 'px' };
   for (const item of Object.values(ITEM)) vars['--' + item.token.replace('/default', '').replace('/', '-')] = c[item.key];
   return vars;
 }
@@ -1043,6 +1122,8 @@ function basePane(node, width, height) {
     frame, scroller, hdr, page, host, input,
     paint() {
       frame.dataset.pair = state.set;
+      frame.dataset.desk = state.desk;
+      frame.classList.toggle('is-overlap', overlaps());
       for (const [k, v] of Object.entries(tokenVars())) frame.style.setProperty(k, v);
     },
     // typing state: focus line, results, and a drawn cursor while a colour is being edited
@@ -1056,12 +1137,13 @@ function basePane(node, width, height) {
   };
 }
 
-/* ── Desktop: set01_header — hover Shop for the dropdown, click Search for the search screen ── */
+/* ── Desktop: set01_header / set05_header — hover Shop for the dropdown, click Search for the search screen ── */
 function createDesktop() {
   const node = document.getElementById('desktopTpl').content.firstElementChild.cloneNode(true);
   const p = basePane(node, DESKTOP_W, DESKTOP_H);
   const { frame, scroller, hdr, page, input } = p;
-  const local = { open: false, search: false, forced: false, caret: false, scrolled: false };
+  // solid: a header colour is being edited, so an overlapping header shows its hover / scroll look
+  const local = { open: false, search: false, forced: false, caret: false, scrolled: false, hover: false, solid: false };
   const shop = hdr.querySelector('[data-dd]');
 
   function render() {
@@ -1069,7 +1151,9 @@ function createDesktop() {
     hdr.classList.toggle('is-open', local.open && !local.search);
     shop.classList.toggle('is-open', local.open && !local.search);
     hdr.classList.toggle('is-search', local.search);
-    frame.classList.toggle('is-dimmed', local.open && !local.search);
+    // Set 05 / 06 also dims the page under its search panel
+    frame.classList.toggle('is-dimmed', (local.open && !local.search) || (local.search && state.desk === '05'));
+    hdr.classList.toggle('on-media', overlaps() && !local.scrolled && !local.hover && !local.solid && !local.open && !local.search);
     p.paintSearch(local.caret);
   }
   // any real interaction ends an auto-shown state; hovering doesn't while the colour picker is open
@@ -1079,11 +1163,11 @@ function createDesktop() {
     viewReleased();
   }
   frame.addEventListener('pointerdown', clearForced, true);
-  hdr.addEventListener('mouseenter', () => { if (cp.el.hidden) clearForced(); });
+  hdr.addEventListener('mouseenter', () => { local.hover = true; if (cp.el.hidden) clearForced(); render(); });
   shop.addEventListener('mouseenter', () => { if (!local.search && !local.forced) { local.open = true; render(); } });
   hdr.querySelectorAll('.d-nav > :not([data-dd]), .d-util .hdr-item').forEach(el =>
     el.addEventListener('mouseenter', () => { if (!local.forced && local.open) { local.open = false; render(); } }));
-  hdr.addEventListener('mouseleave', () => { if (!local.forced && local.open) { local.open = false; render(); } });
+  hdr.addEventListener('mouseleave', () => { local.hover = false; if (!local.forced && local.open) local.open = false; render(); });
 
   function setSearch(open) {
     local.search = open; local.open = false; local.caret = false;
@@ -1091,20 +1175,25 @@ function createDesktop() {
     else input.value = '';
     render();
   }
-  hdr.querySelector('[data-search]').addEventListener('click', () => setSearch(true));
+  // Set 01 swaps the menu for a Close button; Set 05 / 06 keeps it, so Search closes again
+  hdr.querySelector('[data-search]').addEventListener('click', () => setSearch(state.desk === '05' ? !local.search : true));
   hdr.querySelector('[data-close]').addEventListener('click', () => setSearch(false));
   input.addEventListener('input', render);
   input.addEventListener('focus', render);
   input.addEventListener('blur', render);
   input.addEventListener('keydown', e => { if (e.key === 'Escape') setSearch(false); });
-  scroller.addEventListener('scroll', () => { local.scrolled = scroller.scrollTop > 0; }, { passive: true });
+  scroller.addEventListener('scroll', () => {
+    const scrolled = scroller.scrollTop > 0;
+    if (scrolled !== local.scrolled) { local.scrolled = scrolled; render(); }
+  }, { passive: true });
 
   return {
     node, render,
     setPage() { page.innerHTML = pageHTML(state.page); scroller.scrollTop = 0; render(); },
     setView(view, opts = {}) {
-      Object.assign(local, { open: false, search: false, forced: view === 'menu' || view === 'search', caret: false });
+      Object.assign(local, { open: false, search: false, forced: view === 'menu' || view === 'search', caret: false, solid: !!opts.solid });
       scroller.scrollTop = view === 'scroll' ? SCROLL_Y : 0;
+      local.scrolled = scroller.scrollTop > 0;
       if (view === 'menu') local.open = true;
       if (view === 'search') { local.search = true; local.caret = !opts.empty; }
       input.value = view === 'search' && !opts.empty ? 'Product' : '';
@@ -1113,16 +1202,19 @@ function createDesktop() {
   };
 }
 
-/* ── Mobile: mobileA / mobileB / mobileF header and expanded panel ── */
+/* ── Mobile: mobileA / mobileB / mobileF / mobileI header and expanded panel ── */
 function createMobile() {
   const node = document.getElementById('mobileTpl').content.firstElementChild.cloneNode(true);
   const p = basePane(node, MOBILE_W, MOBILE_H);
   const { frame, scroller, hdr, page, host: panel, input } = p;
-  const local = { menu: false, search: false, depth: 1, expand: null, caret: false };
+  const local = { menu: false, search: false, depth: 1, expand: null, caret: false, scrolled: false, solid: false };
 
   function render() {
     p.paint();
     hdr.classList.toggle('is-menu', local.menu);
+    // I's drawer leaves the header bar as it was, under the dim
+    const covered = local.menu && (local.search || state.set !== 'I');
+    hdr.classList.toggle('on-media', overlaps() && !local.scrolled && !local.solid && !covered);
     hdr.classList.toggle('is-search', local.menu && local.search);
     panel.classList.toggle('is-search-mode', local.search && state.set !== 'A'); // A searches inside the menu panel
     panel.dataset.depth = local.depth;
@@ -1146,12 +1238,18 @@ function createMobile() {
   input.addEventListener('input', () => { local.caret = false; render(); });
   input.addEventListener('focus', render);
   input.addEventListener('blur', render);
+  scroller.addEventListener('scroll', () => {
+    const scrolled = scroller.scrollTop > 0;
+    if (scrolled !== local.scrolled) { local.scrolled = scrolled; render(); }
+  }, { passive: true });
 
   return {
     node, render,
     setPage() { page.innerHTML = pageHTML(state.page); scroller.scrollTop = 0; setMenu(false); },
     setView(view, opts = {}) {
       scroller.scrollTop = view === 'scroll' ? SCROLL_Y : 0;
+      local.scrolled = scroller.scrollTop > 0;
+      local.solid = !!opts.solid;
       // A has no separate search screen: its search field sits at the top of the menu panel
       setMenu(view === 'menu' || view === 'search', view === 'search' && state.set !== 'A');
       if (view === 'menu') { local.depth = opts.depth2 ? 2 : 1; local.expand = opts.expand ? 'shop' : null; }
@@ -1355,11 +1453,11 @@ itemsEl.addEventListener('click', e => {
 });
 
 function syncEditor() {
-  const pair = state.set, c = state.colors;
+  const key = pairKey(), c = state.colors;
   itemsEl.querySelectorAll('.citem').forEach(row => {
-    const item = ITEM[row.dataset.key], on = item.on[pair];
+    const item = ITEM[row.dataset.key], on = item.on[key];
     row.hidden = !on || (state.mode === 'screens' && !onScreen(item, state.screen));
-    row.querySelector('label').firstChild.textContent = (item.labelBy && item.labelBy[pair]) || item.label;
+    row.querySelector('label').firstChild.textContent = (item.labelBy && item.labelBy[state.set]) || item.label;
     row.querySelector('.swatch i').style.setProperty('--v', c[row.dataset.key]);
     const dev = row.querySelector('.dev');
     dev.hidden = !on || on === 'both';
@@ -1386,6 +1484,8 @@ function syncEditor() {
     tag.textContent = `블러 ${c[bk.px]}`;
   }
   document.querySelectorAll('#logoSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.logo === state.logo)));
+  document.getElementById('logoMediaRow').hidden = !DESKS[state.desk].overlap;
+  document.querySelectorAll('#logoMediaSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.logo === state.logoMedia)));
 }
 
 document.getElementById('logoSeg').addEventListener('click', e => {
@@ -1394,21 +1494,28 @@ document.getElementById('logoSeg').addEventListener('click', e => {
   state.logo = b.dataset.logo;
   closePicker(); syncEditor(); renderAll();
 });
+document.getElementById('logoMediaSeg').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  state.logoMedia = b.dataset.logo;
+  closePicker(); syncEditor(); renderAll();
+});
 
-/* ── 헤더 디자인 선택: Set 01 with each mobile pairing ── */
+/* ── 헤더 디자인 선택: each desktop header with its mobile pairings ── */
 const dialog = document.getElementById('designDialog');
 const setsEl = document.getElementById('sets');
-let pendingSet = state.set;
-setsEl.innerHTML = `<section class="set-group"><h3>Set 01</h3><div class="sets">${Object.entries(PAIRS).map(([k, p]) => `
-  <button type="button" class="set" data-set="${k}" aria-pressed="false">
+let pendingSet = pairKey();
+setsEl.innerHTML = Object.entries(DESKS).map(([d, desk]) => `<section class="set-group"><h3>${desk.name}${desk.overlap ? ' · 헤더 겹치기 가능' : ''}</h3><div class="sets">${
+  Object.entries(PAIRS[d]).map(([k, p]) => `
+  <button type="button" class="set" data-set="${d + k}" aria-pressed="false">
     <div class="set-thumb"><i></i><i></i><b></b><i class="r"></i></div>
-    <span>Set 01 + ${k}</span>
+    <span>${desk.name} + ${k}</span>
     <small>${p.desc}</small>
-    <small class="set-count">컬러 항목 ${itemCount(k)}개</small>
-  </button>`).join('')}</div></section>`;
+    <small class="set-count">컬러 항목 ${itemCount(d + k)}개</small>
+  </button>`).join('')}</div></section>`).join('');
 const syncPending = () => {
   setsEl.querySelectorAll('.set').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.set === pendingSet)));
-  document.getElementById('applyDesign').disabled = pendingSet === state.set;
+  document.getElementById('applyDesign').disabled = pendingSet === pairKey();
 };
 setsEl.addEventListener('click', e => {
   const b = e.target.closest('.set');
@@ -1417,11 +1524,11 @@ setsEl.addEventListener('click', e => {
 });
 setsEl.addEventListener('dblclick', e => { if (e.target.closest('.set')) dialog.close('apply'); });
 document.getElementById('openDesigns').addEventListener('click', () => {
-  pendingSet = state.set; syncPending(); dialog.showModal();
+  pendingSet = pairKey(); syncPending(); dialog.showModal();
 });
 dialog.addEventListener('close', () => {
-  if (dialog.returnValue !== 'apply' || pendingSet === state.set) return;
-  state.set = pendingSet;
+  if (dialog.returnValue !== 'apply' || pendingSet === pairKey()) return;
+  state.desk = pendingSet.slice(0, 2); state.set = pendingSet.slice(2);
   closePicker(); syncEditor();
   setView(state.mode === 'screens' ? state.screen : 'default');
 });
