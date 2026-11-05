@@ -205,12 +205,28 @@
   /* a sub group after another one gets more room, so each reads as its own block */
   .citem + .csub, .citem[hidden] + .csub { margin-top: 20px; }
   .csub[hidden] { display: none; }
+  /* C1: 헤더 겹침 shows one media tone at a time */
+  .seg.media-seg { margin: 0 0 6px; }
+  .seg.media-seg button { flex: 1; padding: 6px 8px; font-size: 12px; white-space: nowrap; }
+  .seg.media-seg[hidden] { display: none; }
+  /* C1: the 미디어 위 colours sit on a surface of that tone, so it reads as "over dark / light media" */
+  .media-surface[data-tone] { margin: 12px -8px 0; padding: 8px 8px 4px; border-radius: 10px; transition: background-color .2s ease; }
+  .media-surface[data-tone="dark"] .media-seg { background: rgba(255,255,255,.1); }
+  .media-surface[data-tone="dark"] .media-seg button { color: rgba(255,255,255,.64); }
+  .media-surface[data-tone="dark"] .media-seg button[aria-pressed="true"] { background: #fff; color: #18181b; }
+  .media-surface[data-tone="light"] .media-seg { background: #e4e4e7; }
+  .media-surface[data-tone="dark"] { background: #1f1f22; }
+  .media-surface[data-tone="light"] { background: #f4f4f5; }
+  .media-surface[data-tone="dark"] .citem label { color: #fff; }
+  .media-surface[data-tone="dark"] .swatch { border-color: rgba(255,255,255,.24); }
+  .media-surface[data-tone="dark"] .dev { color: rgba(255,255,255,.72); background: rgba(255,255,255,.12); }
+  .media-surface[data-tone="light"] .dev { background: #fff; }
   .checker {
     background-image: linear-gradient(45deg, #e4e4e7 25%, transparent 25%, transparent 75%, #e4e4e7 75%), linear-gradient(45deg, #e4e4e7 25%, transparent 25%, transparent 75%, #e4e4e7 75%);
     background-size: 8px 8px; background-position: 0 0, 4px 4px; background-color: #fff;
   }
   .swatch {
-    position: relative; width: 28px; height: 28px; border-radius: 6px; overflow: hidden; padding: 0; cursor: pointer;
+    position: relative; width: 26px; height: 26px; border-radius: 5px; overflow: hidden; padding: 0; cursor: pointer;
     border: 1px solid var(--ui-line);
   }
   .swatch i { position: absolute; inset: 0; background: var(--v); pointer-events: none; }
@@ -467,10 +483,16 @@
   .item-group + .item-group { margin-top: 26px; }
   /* 헤더 겹침 sits apart from the rest: a full-bleed line under it */
   .item-group.is-media::after { content: ""; display: block; height: 1px; margin: 26px -20px 0; background: var(--ui-line); }
+  /* C1: an inset line between 헤더 · 펼친 메뉴 · 검색 · backdrop · 로고 컬러 */
+  body[data-mode="auto"] .item-group:not(.is-media) + .item-group { padding-top: 26px; border-top: 1px solid var(--ui-line); }
+  /* 로고 컬러 (겹치기 off): an outlined box at the bottom of 헤더 */
+  .logo-box { margin-top: 12px; padding: 12px 14px; border: 1px solid var(--ui-line); border-radius: 8px; }
+  .logo-box .logo-row { margin-top: 0; padding-top: 0; border-top: 0; }
+  .logo-box .hint { margin-top: 6px; }
   .item-group h3 { margin: 0; font-size: 12.5px; font-weight: 600; }
   .item-group > p { margin: 3px 0 8px; font-size: 11.5px; color: var(--ui-sub); line-height: 1.5; }
   .item-group[hidden], .citem[hidden] { display: none; }
-  .citem { display: flex; align-items: center; gap: 10px; min-height: 40px; }
+  .citem { display: flex; align-items: center; gap: 10px; min-height: 38px; }
   .citem label { flex: 1; min-width: 0; font-size: 12px; line-height: 1.3; display: flex; align-items: center; gap: 6px; cursor: pointer; }
   .dev {
     flex: none; font: 600 10.5px/1 Pretendard, sans-serif; padding: 3px 6px; border-radius: 4px;
@@ -585,24 +607,28 @@
   .m-left, .m-right { display: flex; align-items: center; gap: 16px; height: 100%; min-width: 48px; }
   .m-right { justify-content: flex-end; }
   .m .hdr-logo { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
-  .frame[data-pair="B"] .hdr-logo { position: static; transform: none; }
+  .frame:is([data-pair="B"], [data-pair="M"], [data-pair="C"], [data-pair="D"], [data-pair="K"]) .hdr-logo { position: static; transform: none; }
   /* which buttons each pairing shows */
-  .frame:not([data-pair="A"]) .only-a, .frame:not([data-pair="B"]) .only-b, .frame:not([data-pair="F"]) .only-f,
-  .frame:not([data-pair="I"]) .only-i, .frame:not([data-pair="B"]):not([data-pair="I"]) .only-bi,
-  .frame:not([data-pair="F"]):not([data-pair="I"]) .only-fi,
-  .frame[data-pair="A"] .not-a { display: none !important; }
+  .frame:not([data-pair="A"]) .only-a, .frame:not([data-pair="B"]):not([data-pair="M"]):not([data-pair="C"]):not([data-pair="D"]):not([data-pair="K"]) .only-b, .frame:not([data-pair="C"]) .only-c, .frame:not([data-pair="F"]):not([data-pair="L"]) .only-f,
+  .frame:not([data-pair="I"]) .only-i, .frame:not([data-pair="B"]):not([data-pair="I"]):not([data-pair="M"]):not([data-pair="E"]):not([data-pair="C"]):not([data-pair="D"]):not([data-pair="K"]) .only-bi,
+  .frame:not([data-pair="F"]):not([data-pair="I"]):not([data-pair="L"]) .only-fi,
+  .frame:not([data-pair="A"]):not([data-pair="L"]):not([data-pair="M"]):not([data-pair="E"]):not([data-pair="C"]) .only-alm,
+  .frame:is([data-pair="L"], [data-pair="M"]) .m-list.not-a,
+  .frame[data-pair="A"] .not-a, .frame:not([data-pair="E"]) .only-e, .frame[data-pair="E"] :is(.m-left, .mb.not-a:not(.mb-bag), .m-list.not-a),
+  .frame[data-pair="C"] :is(.m-left, .m-list.not-a, .m-back, .m-res), .frame:is([data-pair="D"], [data-pair="K"]) .m-left { display: none !important; }
   .mb-close { display: none; }
-  .frame[data-pair="B"] .m-left { display: none; }
+  .frame:is([data-pair="B"], [data-pair="M"]) .m-left { display: none; }
   .m .hdr.is-menu .mb-open { display: none; }
   .m .hdr.is-menu .m-left .mb-close { display: flex; }
   /* B: an open panel keeps only the close button on the right */
-  .frame[data-pair="B"] .hdr.is-menu .hdr-logo, .frame[data-pair="B"] .hdr.is-menu .m-right > :not(.mb-close) { display: none; }
-  .frame[data-pair="B"] .hdr.is-menu .m-right .mb-close { display: flex; }
+  .frame:is([data-pair="B"], [data-pair="M"], [data-pair="C"]) .hdr.is-menu .hdr-logo, .frame:is([data-pair="B"], [data-pair="M"], [data-pair="C"]) .hdr.is-menu .m-right > :not(.mb-close) { display: none; }
+  .frame:is([data-pair="B"], [data-pair="M"], [data-pair="C"]) .hdr.is-menu .m-right .mb-close { display: flex; }
   /* F: search keeps only the close button on the right */
-  .frame[data-pair="F"] .hdr.is-search .m-left, .frame[data-pair="F"] .hdr.is-search .hdr-logo,
-  .frame[data-pair="F"] .hdr.is-search .m-right > :not(.mb-close) { display: none; }
-  .frame[data-pair="F"] .hdr.is-search .m-right .mb-close { display: flex; }
-  .frame:is([data-pair="B"], [data-pair="F"]) .hdr.is-menu .hdr-bar { justify-content: flex-end; }
+  .frame:is([data-pair="F"], [data-pair="L"]) .hdr.is-search .m-left, .frame:is([data-pair="F"], [data-pair="L"]) .hdr.is-search .hdr-logo,
+  .frame:is([data-pair="F"], [data-pair="L"]) .hdr.is-search .m-right > :not(.mb-close) { display: none; }
+  .frame:is([data-pair="F"], [data-pair="L"]) .hdr.is-search .m-right .mb-close { display: flex; }
+  .frame:is([data-pair="B"], [data-pair="F"], [data-pair="L"], [data-pair="M"], [data-pair="C"]) .hdr.is-menu .hdr-bar { justify-content: flex-end; }
+  .frame[data-pair="L"] .hdr.is-menu:not(.is-search) .hdr-bar { justify-content: space-between; }
   .frame[data-pair="F"] .hdr.is-menu:not(.is-search) .hdr-bar { justify-content: space-between; }
 
   .m-panel {
@@ -639,6 +665,335 @@
   .m-panel:not(.is-search-mode) .m-res, .m-panel.is-search-mode .m-list, .m-panel.is-search-mode .m-util,
   .frame[data-pair="A"] .m-res, .frame:not([data-pair="A"]) .m-panel:not(.is-search-mode) .sf { display: none; }
   .m-panel[data-depth="1"] .depth2, .m-panel[data-depth="2"] .depth1 { display: none; }
+
+  /* ── Set 01 follow-up (Figma 7375:327301): spacing and type, Set 01 only ── */
+  .frame:not(.m)[data-desk="01"] :is(.d-nav, .d-util) { gap: 20px; }
+  .frame:not(.m)[data-desk="01"] .dd { left: -8px; min-width: 0; padding: 8px 8px 12px; }
+  .frame:not(.m)[data-desk="01"] .dd a { padding: 8px; }
+  .frame:not(.m)[data-desk="01"] .d-search .res { margin-top: 52px; }
+  .frame:not(.m)[data-desk="01"] .res-head { padding: 0 2px; font: 500 13px/1.2 Pretendard, Inter, sans-serif; }
+  .frame:not(.m)[data-desk="01"] .d-grid .nm { margin-top: 12px; }
+  .frame:not(.m)[data-desk="01"] .d-grid .pr { margin-top: 4px; font: 600 14px/20px Pretendard, Inter, sans-serif; }
+  .frame:not(.m)[data-desk="01"] .d-grid .pr s { margin-left: 4px; font: 400 12px/16px Pretendard, Inter, sans-serif; }
+  .frame[data-desk="01"] :is(.sf input, .sf-mirror) { font-family: Pretendard, Inter, sans-serif; text-transform: capitalize; }
+  /* mobile: B and F show the bag count */
+  .frame.m[data-desk="01"]:is([data-pair="B"], [data-pair="F"]) .badge { display: flex; }
+  .frame.m[data-desk="01"][data-pair="B"] .m-right { gap: 0; margin-right: -6px; } /* 24px icons in 36px buttons: the icon, not the button, sits 16px from the edge */
+  .frame.m[data-desk="01"][data-pair="B"] .m-right > .mb { width: 36px; }
+  .frame.m[data-desk="01"][data-pair="B"] .mb svg { width: 24px; height: 24px; }
+  .frame.m[data-desk="01"] .m-list .m-item > svg, .frame.m[data-desk="01"] .acc-ico svg { width: 16px; height: 16px; }
+  .frame.m[data-desk="01"] .m-list .depth1 .m-item, .frame.m[data-desk="01"] .acc > .m-item { padding-right: 4px; }
+  .frame.m[data-desk="01"][data-pair="B"] .m-list.not-a { margin-top: 4px; }
+  .frame.m[data-desk="01"][data-pair="B"] .acc > .m-item, .frame.m[data-desk="01"][data-pair="B"] .m-list.not-a > .m-item { padding-top: 13px; padding-bottom: 13px; }
+  .frame.m[data-desk="01"] .acc-sub { padding: 4px 0 8px 12px; }
+  .frame.m[data-desk="01"][data-pair="B"] .acc-sub .m-item { padding: 12px 0; }
+  /* A: the field above the menu, the 2depth back row */
+  .frame.m[data-desk="01"][data-pair="A"] .m-panel .sf { margin: 8px 0 16px; padding: 18px 0 19px; gap: 6px; }
+  .frame.m[data-desk="01"][data-pair="A"] .m-list { margin-top: 0; }
+  .frame.m[data-desk="01"][data-pair="A"] .depth2 .m-back { height: 40px; padding: 0; gap: 0; margin-bottom: 4px; }
+  .frame.m[data-desk="01"][data-pair="A"] .depth2 .m-back svg { width: 16px; height: 16px; }
+  .frame.m[data-desk="01"][data-pair="A"] .depth2 .m-item:not(.m-back) { padding: 10px 0; }
+  .frame.m[data-desk="01"][data-pair="F"] .m-panel > .m-util { margin-top: 80px; margin-bottom: -4px; }
+  /* B · F search: 20px sides, the field lower, results closer */
+  .frame.m[data-desk="01"]:is([data-pair="B"], [data-pair="F"]) .m-panel.is-search-mode { padding-left: 20px; padding-right: 20px; }
+  .frame.m[data-desk="01"]:is([data-pair="B"], [data-pair="F"]) .m-panel.is-search-mode .sf { margin: 24px 0 12px; padding: 18px 0 19px; }
+  .frame.m[data-desk="01"][data-pair="F"] .m-panel.is-search-mode .sf { margin-top: 20px; }
+  .frame.m[data-desk="01"]:is([data-pair="B"], [data-pair="F"]) .m-res { margin-top: 16px; }
+  .frame.m[data-desk="01"]:is([data-pair="B"], [data-pair="F"]) .m-res .res-label { font: 400 12px/1.2 Pretendard, Inter, sans-serif; }
+  .frame.m[data-desk="01"][data-pair="B"] .m-res ul { margin-top: 14px; }
+  .frame.m[data-desk="01"][data-pair="F"] .m-res ul { margin-top: 16px; }
+  .frame.m[data-desk="01"]:is([data-pair="B"], [data-pair="F"]) .m-res li { padding: 10px 0; }
+
+  /* ── Set 02 + C (Figma 7327:59392): menu text centred, utility icons; no dim behind the menu or search ── */
+  .sf-go, .d-chev { display: none; }
+  .frame:not(.m)[data-desk="02"] { --hdr-h: 70px; }
+  .frame:not(.m)[data-desk="02"] .d-nav { gap: 20px; }
+  .frame:not(.m)[data-desk="02"] .d-nav > .hdr-item { font-weight: 500; text-transform: uppercase; }
+  .frame:not(.m)[data-desk="02"] .d-nav > [data-dd] { gap: 4px; padding: 0 4px 0 8px; }
+  .frame:not(.m)[data-desk="02"] .d-chev { display: block; flex: none; width: 16px; height: 16px; transition: transform .2s ease; }
+  .frame:not(.m)[data-desk="02"] .hdr.is-open .d-chev { transform: rotate(180deg); }
+  .frame:not(.m)[data-desk="02"] .d-txt { display: none; }
+  .frame:not(.m)[data-desk="02"] .d-util { gap: 0; }
+  .frame:not(.m)[data-desk="02"] .d-ico { display: flex; padding: 0 8px; }
+  .frame:not(.m)[data-desk="02"] .d-ico svg { width: 24px; height: 24px; }
+  .frame[data-desk="02"] .badge { display: flex; }
+  /* set02_expanded: a small card under the first item, bottom corners rounded */
+  .frame:not(.m)[data-desk="02"] .dd { left: 6px; min-width: 0; padding: 8px 12px 12px; border-radius: 0 0 10px 10px; align-items: stretch; }
+  .frame:not(.m)[data-desk="02"] .dd a { padding: 12px; border-radius: 8px; font: 400 13px/1.2 Inter, sans-serif; color: inherit; text-transform: capitalize; transition: background-color .15s ease; }
+  .frame:not(.m)[data-desk="02"] .dd a:hover, .frame:not(.m)[data-desk="02"] .dd.show-hover a:nth-child(1) { color: inherit; background-color: var(--s02-hover); } /* a tint of the panel toward 메뉴 텍스트 (hoverTint) */
+  /* set02_search: the menu and icons give way to a 360px pill field and an X */
+  .frame:not(.m)[data-desk="02"] .hdr.is-search .d-close { margin-right: 0; padding: 0 0 0 8px; }
+  .frame:not(.m)[data-desk="02"] .d-close > span { display: none; }
+  .frame:not(.m)[data-desk="02"] .d-close .x-ico { display: block; width: 24px; height: 24px; stroke-width: .8; }
+  .frame:not(.m)[data-desk="02"] .d-search {
+    left: auto; right: calc(var(--pad-x) + 32px); top: 15px; width: 360px; height: 40px; padding: 0 12px; overflow: hidden; z-index: 3;
+    display: flex; align-items: center; border-radius: 9999px; background: var(--header-search-field-background);
+  }
+  .frame:not(.m)[data-desk="02"] .d-search :is(.ds-head, .res, .s4-x) { display: none; }
+  .frame[data-desk="02"] .sf { flex: 1; min-width: 0; padding: 0; gap: 6px; border: 0; }
+  .frame:not(.m)[data-desk="02"] .sf-icon, .frame:not(.m)[data-desk="02"] .sf-go { width: 20px; height: 20px; }
+  .frame[data-desk="02"] .sf-go { display: block; flex: none; margin-left: 2px; color: var(--header-search-icon); }
+  .frame[data-desk="02"] :is(.sf input, .sf-mirror) { font: 500 14px/1.2 Pretendard, Inter, sans-serif; text-transform: capitalize; }
+  .frame[data-desk="02"] .sf-mirror i { height: 16px; }
+  /* mobileC: logo left; search · bag · menu icons right (24px in 36px buttons, the last flush right) */
+  .frame.m[data-pair="C"] .m-right { gap: 0; margin-right: -6px; }
+  .frame.m[data-pair="C"] .m-right > .mb { width: 36px; }
+  .frame.m[data-pair="C"] .mb svg { width: 24px; height: 24px; }
+  /* mobileC_expanded: 14px items with a chevron for Shop · About, Sign in at the bottom; 2depth has no back row */
+  .frame.m[data-pair="C"] .m-panel { padding: 4px 16px 16px; }
+  .frame.m[data-pair="C"] .m-list { margin-top: 0; }
+  .frame.m[data-pair="C"] :is(.m-list, .m-util) .m-item { padding: 13px 0; font: 500 14px/1.2 Inter, sans-serif; }
+  .frame.m[data-pair="C"] .m-list .m-item > svg { width: 17px; height: 17px; }
+  /* mobileC_search: a pill field 120px under the header, no results */
+  .frame.m[data-pair="C"] .m-panel.is-search-mode { padding-top: 120px; }
+  .frame.m[data-pair="C"] .m-panel .sf { flex: none; padding: 14px 17px; gap: 8px; border-radius: 9999px; background: var(--header-search-field-background); }
+  .frame.m[data-pair="C"] .m-panel :is(.sf-icon, .sf-go) { width: 21px; height: 21px; margin: -2px; }
+
+  /* ── Set 03 + D (Figma 7327:60068): menu centred with a 2px line under the open item, the 2depth a bar under the header ── */
+  .frame:not(.m)[data-desk="03"] { --hdr-h: 63px; }
+  .frame:not(.m)[data-desk="03"] .d-nav { left: 0; right: 0; transform: none; justify-content: center; gap: 32px; pointer-events: none; }
+  .frame:not(.m)[data-desk="03"] .d-nav > .hdr-item { pointer-events: auto; font: 500 14px/1.2 Inter, sans-serif; transition: box-shadow .2s ease; }
+  .frame:not(.m)[data-desk="03"] .d-nav > .hdr-item:hover > span, .frame:not(.m)[data-desk="03"] .hdr-item.is-open > span { text-decoration: none; }
+  .frame:not(.m)[data-desk="03"] .d-nav > .hdr-item:hover, .frame:not(.m)[data-desk="03"] .d-nav > .hdr-item.is-open { box-shadow: inset 0 -2px 0 currentColor; }
+  .frame:not(.m)[data-desk="03"] .hdr-item[data-dd] { position: static; }
+  .frame:not(.m)[data-desk="03"] .d-txt { display: none; }
+  .frame:not(.m)[data-desk="03"] .d-util { gap: 0; }
+  .frame:not(.m)[data-desk="03"] .d-ico { display: flex; padding: 0 8px; }
+  .frame:not(.m)[data-desk="03"] .d-ico svg { width: 24px; height: 24px; }
+  .frame[data-desk="03"] .badge { display: flex; }
+  /* set03_2depth: one 64px row, centred; hovering an item fades the others */
+  .frame:not(.m)[data-desk="03"] .dd {
+    left: 0; right: 0; top: 100%; min-width: 0; height: 64px; padding: 0 var(--pad-x);
+    flex-direction: row; justify-content: center; align-items: center; gap: 32px; box-shadow: inset 0 1px 0 color-mix(in srgb, var(--header-nav) 8%, transparent);
+  }
+  .frame:not(.m)[data-desk="03"] .dd a { padding: 8px; font: 400 13px/1.2 Inter, sans-serif; color: inherit; }
+  .frame:not(.m)[data-desk="03"] .dd:hover a:not(:hover), .frame:not(.m)[data-desk="03"] .dd.show-hover:not(:hover) a:not(:nth-child(4)) { color: color-mix(in srgb, var(--header-menu-nav) 20%, transparent); }
+  /* set03_searchBar + searchResult: the menu stays; a big field and a text list open under it, the page dimmed */
+  .frame:not(.m)[data-desk="03"] .hdr.is-search :is(.d-nav, .d-util) { display: flex; }
+  .frame:not(.m)[data-desk="03"] .hdr.is-search .d-close, .frame:not(.m)[data-desk="03"] .d-search :is(.ds-head, .s4-x) { display: none; }
+  .frame:not(.m)[data-desk="03"] .d-search { height: auto; padding: 0 var(--pad-x); box-shadow: inset 0 1px 0 color-mix(in srgb, var(--header-nav) 8%, transparent); }
+  .frame:not(.m)[data-desk="03"] .d-search .sf { padding: 38px 0 34px; border: 0; }
+  .frame[data-desk="03"] .sf-icon { display: none; }
+  .frame:not(.m)[data-desk="03"] :is(.sf input, .sf-mirror) { font: 400 20px/1.2 Pretendard, Inter, sans-serif; text-transform: capitalize; }
+  .frame:not(.m)[data-desk="03"] .sf-mirror i { height: 22px; }
+  .frame:not(.m)[data-desk="03"] .d-search .res { margin: 0; padding: 16px 0 40px; }
+  .frame[data-desk="03"] .res-link, .frame:not(.m)[data-desk="03"] .d-grid { display: none; }
+  .frame[data-desk="03"] .res-label { font: 400 12px/1.2 Pretendard, Inter, sans-serif; }
+  .frame:not(.m)[data-desk="03"] .d-list { display: block; margin-top: 16px; font: 400 14px/1.2 Inter, Pretendard, sans-serif; text-transform: capitalize; }
+  .frame:not(.m)[data-desk="03"] .d-list li { padding: 8px 0; cursor: pointer; }
+  .frame:not(.m)[data-desk="03"] .d-list li:hover { color: color-mix(in srgb, var(--header-search-result) 62%, transparent); }
+  /* mobileD: 64px; search · bag · menu icons right, the menu icon turning into an X */
+  .frame.m[data-pair="D"] { --hdr-h: 64px; }
+  .frame.m[data-pair="D"] .m-right { gap: 0; margin-right: -6px; }
+  .frame.m[data-pair="D"] .m-right > .mb { width: 36px; }
+  .frame.m[data-pair="D"] .mb svg { width: 24px; height: 24px; }
+  .frame.m[data-pair="D"] .hdr.is-menu .m-right .mb-close { display: flex; }
+  /* mobileD_expanded: 16px accordion, Sign in 80px under the list */
+  .frame.m[data-pair="D"] .m-panel { padding: 16px 16px 20px; }
+  .frame.m[data-pair="D"] .m-list { margin-top: 0; }
+  .frame.m[data-pair="D"] :is(.m-list.not-a > a.m-item, .acc > .m-item) { padding: 14px 4px 14px 0; font: 400 16px/1.2 Inter, sans-serif; }
+  .frame.m[data-pair="D"] .acc-ico { display: flex; }
+  .frame.m[data-pair="D"] .acc-ico svg { width: 24px; height: 24px; margin: -2.5px; }
+  .frame.m[data-pair="D"] .acc-sub { padding: 8px 0 16px; }
+  .frame.m[data-pair="D"] .acc-sub .m-item { padding: 11px 0; font: 400 14px/1.2 Inter, sans-serif; }
+  .frame.m[data-pair="D"] .m-panel > .m-util { margin-top: 80px; }
+  .frame.m[data-pair="D"] .m-util .m-item { padding: 14px 0; font: 400 16px/1.2 Inter, sans-serif; }
+  /* mobileD_search: a borderless 16px field, the results under it */
+  .frame.m[data-pair="D"] .m-panel.is-search-mode { padding: 0 20px; }
+  .frame.m[data-pair="D"] .m-panel .sf { padding: 38px 0 30px; border: 0; }
+  .frame.m[data-pair="D"] :is(.sf input, .sf-mirror) { font: 400 16px/1.2 Pretendard, Inter, sans-serif; text-transform: capitalize; }
+  .frame.m[data-pair="D"] .sf-mirror i { height: 19px; }
+  .frame.m[data-pair="D"] .m-res { margin-top: 0; padding-top: 16px; }
+  .frame.m[data-pair="D"] .res-label { font-size: 13px; }
+  .frame.m[data-pair="D"] .m-res ul { margin-top: 16px; font: 400 14px/1.2 Inter, Pretendard, sans-serif; text-transform: capitalize; }
+  .frame.m[data-pair="D"] .m-res li { padding: 11px 0; }
+
+  /* ── Set 07 + K (Figma 7328:60112): logo · menu left, text utilities right, a 1px line under the header ── */
+  .frame:not(.m)[data-desk="07"] { --hdr-h: 57px; }
+  .frame[data-desk="07"] .hdr-bar { border-bottom: 1px solid var(--header-border); } /* every line follows 헤더 › 구분선 */
+  .frame:not(.m)[data-desk="07"] .hdr:is(.is-open, .is-search) .hdr-bar { border-bottom-color: transparent; }
+  .frame:not(.m)[data-desk="07"] .hdr-logo { width: 67px; }
+  .frame:not(.m)[data-desk="07"] .d-nav { position: static; transform: none; margin-left: 16px; gap: 12px; }
+  .frame:not(.m)[data-desk="07"] :is(.d-nav, .d-util) > .hdr-item { font: 500 14px/1.2 Inter, sans-serif; text-transform: capitalize; }
+  .frame:not(.m)[data-desk="07"] .d-util { margin-left: auto; }
+  .frame:not(.m)[data-desk="07"] .hdr.is-search :is(.d-nav, .d-util) { display: flex; }
+  .frame:not(.m)[data-desk="07"] .hdr.is-search .d-close { display: none; }
+  .frame:not(.m)[data-desk="07"] .hdr.is-search [data-search] > span { text-decoration: none; }
+  /* set07_expanded: a full-width panel, the 2depth list under Shop */
+  .frame:not(.m)[data-desk="07"] .hdr-item[data-dd] { position: static; }
+  .frame:not(.m)[data-desk="07"] .dd { left: 0; right: 0; min-width: 0; top: calc(100% + 1px); padding: 12px var(--pad-x) 29px 122px; border-bottom: 1px solid var(--header-border); } /* starts under the header line */
+  .frame:not(.m)[data-desk="07"] .dd a { padding: 8px 0; font: 400 14px/1.2 Inter, sans-serif; }
+  /* set07_searchBar + searchResult */
+  .frame:not(.m)[data-desk="07"] .d-search { height: auto; padding: 28px var(--pad-x) 32px; border-bottom: 1px solid var(--header-border); }
+  .frame:not(.m)[data-desk="07"] .d-search :is(.ds-head, .s4-x) { display: none; }
+  .frame:not(.m)[data-desk="07"] .d-search .sf { padding: 14px 0 15px; gap: 6px; }
+  .frame:not(.m)[data-desk="07"] .sf-icon { width: 17px; height: 17px; }
+  .frame[data-desk="07"] :is(.sf input, .sf-mirror) { font: 500 14px/1.2 Pretendard, Inter, sans-serif; text-transform: capitalize; }
+  .frame[data-desk="07"] .sf-mirror i { height: 16px; }
+  .frame:not(.m)[data-desk="07"] .d-search .res { margin-top: 40px; padding-bottom: 4px; }
+  .frame[data-desk="07"] .res-link, .frame:not(.m)[data-desk="07"] .d-grid { display: none; }
+  .frame:not(.m)[data-desk="07"] .res-label { font: 500 13px/1.2 Pretendard, Inter, sans-serif; }
+  .frame:not(.m)[data-desk="07"] .d-list { display: block; margin-top: 16px; font: 400 14px/1.2 Inter, Pretendard, sans-serif; text-transform: capitalize; }
+  .frame:not(.m)[data-desk="07"] .d-list li { padding: 8px 0; cursor: pointer; }
+  .frame:not(.m)[data-desk="07"] .d-list li:hover { color: color-mix(in srgb, var(--header-search-result) 62%, transparent); }
+  /* mobileK: 61px with the line; search · bag · menu icons (24px in 36px buttons), the menu icon turning into an X */
+  .frame.m[data-pair="K"] { --hdr-h: 61px; }
+  .frame.m[data-pair="K"] .m-right { gap: 0; margin-right: -6px; }
+  .frame.m[data-pair="K"] .m-right > .mb { width: 36px; }
+  .frame.m[data-pair="K"] .mb svg { width: 24px; height: 24px; }
+  .frame.m[data-pair="K"] .badge { display: flex; }
+  .frame.m[data-pair="K"] .hdr.is-menu .m-right .mb-close { display: flex; }
+  .frame.m[data-pair="K"] .hdr.is-search :is(.hdr-logo, .m-right > :not(.mb-close)) { display: none; }
+  .frame.m[data-pair="K"] .hdr.is-search .hdr-bar { justify-content: flex-end; }
+  /* mobileK_expanded: full-width uppercase rows with lines, the open row's list closing with the line */
+  .frame.m[data-pair="K"] .m-panel { padding: 0; }
+  .frame.m[data-pair="K"] .m-list { margin-top: 0; }
+  .frame.m[data-pair="K"] :is(.m-list.not-a > a.m-item, .acc > .m-item) {
+    padding: 22px 20px 23px 16px; border-bottom: 1px solid var(--header-border); font: 500 13px/1.2 Inter, sans-serif; text-transform: uppercase;
+  }
+  .frame.m[data-pair="K"] .m-list.not-a > .acc.is-open > .m-item.m-item { border-bottom-color: transparent; }
+  .frame.m[data-pair="K"] .acc-ico { display: flex; }
+  .frame.m[data-pair="K"] .acc-ico svg { width: 20px; height: 20px; margin: -2px; }
+  .frame.m[data-pair="K"] .acc-sub { padding: 0 16px 21px; border-bottom: 1px solid var(--header-border); }
+  .frame.m[data-pair="K"] .acc-sub .m-item { padding: 10px 0; font: 400 13px/1.2 Inter, sans-serif; }
+  .frame.m[data-pair="K"] .m-panel > .m-util { margin-top: auto; padding: 48px 16px 16px; }
+  .frame.m[data-pair="K"] .m-util .m-item { padding: 10px 0; font: 500 13px/1.2 Inter, sans-serif; text-transform: uppercase; }
+  /* mobileK_search */
+  .frame.m[data-pair="K"] .m-panel .sf { margin: 20px 20px 8px; padding: 18px 0 19px; gap: 6px; }
+  .frame.m[data-pair="K"] :is(.sf input, .sf-mirror) { font-size: 13px; line-height: 1.2; }
+  .frame.m[data-pair="K"] .m-res { margin-top: 0; padding: 20px 20px 0; }
+  .frame.m[data-pair="K"] .res-label { font: 400 12px/1.2 Pretendard, Inter, sans-serif; }
+  .frame.m[data-pair="K"] .m-res ul { margin-top: 14px; font: 400 13px/1.2 Inter, Pretendard, sans-serif; text-transform: capitalize; }
+  .frame.m[data-pair="K"] .m-res li { padding: 10px 0; }
+
+  /* ── Set 10 + N (Figma 7328:62302): no header bar — logo left, square chips right; 2depth and search stack as chips ── */
+  .d-x10, .d-cnt, .frame:not([data-pair="N"]) .only-n { display: none !important; }
+  .frame[data-desk="10"] .hdr { --s10-c-bg: var(--s10-bg); --s10-c-nav: var(--s10-nav); --s10-c-bga: var(--s10-bga); --s10-c-act: var(--s10-act); }
+  .frame[data-desk="10"] .hdr.on-media { --s10-c-bg: var(--s10m-bg); --s10-c-nav: var(--s10m-nav); --s10-c-bga: var(--s10m-bga); --s10-c-act: var(--s10m-act); }
+  .frame[data-desk="10"] .hdr .hdr-bar, .frame[data-desk="10"] .hdr.on-media .hdr-bar { background: transparent; color: var(--s10-c-nav); -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; }
+  /* set10_header: 74px, 20px sides; the menu, icons and bag count are 32px chips, 2px apart */
+  .frame:not(.m)[data-desk="10"] { --hdr-h: 74px; --pad-x: 20px; }
+  .frame:not(.m)[data-desk="10"] .dim { top: 0; }
+  .frame:not(.m)[data-desk="10"] .d-nav { position: static; transform: none; height: 32px; gap: 2px; margin-left: auto; }
+  .frame:not(.m)[data-desk="10"] .hdr-bar { column-gap: 0; } /* one 2px gap everywhere, menu chips to utility chips too */
+  .frame:not(.m)[data-desk="10"] .d-util, .frame:not(.m)[data-desk="10"] .hdr.is-search .d-util { display: flex; height: 32px; gap: 2px; margin: 0 0 0 2px; }
+  .frame:not(.m)[data-desk="10"] .hdr.is-search .d-nav { display: flex; }
+  .frame:not(.m)[data-desk="10"] :is(.d-txt, .d-ico.mb-bag, .d-chev), .frame:not(.m)[data-desk="10"] .hdr.is-search .d-close { display: none; }
+  .frame:not(.m)[data-desk="10"] :is(.d-nav > .hdr-item, .d-util > .hdr-item, .d-util > .d-x10, .d-util > .d-cnt) {
+    height: 32px; padding: 0 12px; border-radius: 2px; background: var(--s10-c-bg); color: var(--s10-c-nav);
+    font: 400 12px/1 Inter, Pretendard, sans-serif; text-transform: uppercase;
+    -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); transition: background-color .2s ease, color .2s ease;
+  }
+  .frame:not(.m)[data-desk="10"] .hdr-item:hover > span, .frame:not(.m)[data-desk="10"] .hdr-item.is-open > span { text-decoration: none; }
+  .frame:not(.m)[data-desk="10"] .d-util > .d-ico, .frame:not(.m)[data-desk="10"] .d-util > .d-x10 { display: flex; justify-content: center; width: 32px; padding: 0; }
+  .frame:not(.m)[data-desk="10"] .d-util > .d-ico:not(.mb-bag)[aria-label="계정"] { order: 1; }
+  .frame:not(.m)[data-desk="10"] .d-util > [data-search] { order: 2; }
+  .frame:not(.m)[data-desk="10"] .d-util > .d-x10 { order: 2; display: none !important; }
+  .frame:not(.m)[data-desk="10"] .d-util > .d-cnt { order: 3; display: flex !important; }
+  .frame:not(.m)[data-desk="10"] .d-util svg { width: 16px; height: 16px; }
+  .frame:not(.m)[data-desk="10"] .d-util > .d-ico.mb-bag { display: none !important; }
+  .frame:not(.m)[data-desk="10"] .hdr.is-search .d-util > [data-search] { display: none; }
+  .frame:not(.m)[data-desk="10"] .hdr.is-search .d-util > .d-x10 { display: flex !important; background: var(--s10-c-bga); color: var(--s10-c-act); }
+  /* the open 1depth chip is the selected one */
+  .frame:not(.m)[data-desk="10"] .hdr.is-open .hdr-item[data-dd] { background: var(--s10-c-bga); color: var(--s10-c-act); }
+  .frame:not(.m)[data-desk="10"] .d-nav > .hdr-item:hover { background: var(--s10-c-bga); color: var(--s10-c-act); } /* 1depth hover = the selected chip */
+  .frame:not(.m)[data-desk="10"] .d-util > :is(.hdr-item, .d-ico, .d-cnt):hover { background: var(--s10-c-bga); color: var(--s10-c-act); } /* utility hover = the selected chip */
+  /* set10_2depth: a column of chips 2px under Shop; hover lays 2% of the text colour over the chip */
+  .frame:not(.m)[data-desk="10"] .dd { top: calc(100% + 2px); min-width: 0; padding: 0; gap: 2px; background: none; color: var(--s10-c-nav); }
+  .frame:not(.m)[data-desk="10"] .dd a {
+    display: flex; align-items: center; height: 32px; padding: 0 12px; border-radius: 2px; background-color: var(--s10-c-bg); color: inherit;
+    font: 400 12px/1 Inter, Pretendard, sans-serif; text-transform: uppercase; -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+  }
+  .frame:not(.m)[data-desk="10"] .dd a:hover, .frame:not(.m)[data-desk="10"] .dd.show-hover a:nth-child(6) {
+    color: inherit; background-image: linear-gradient(color-mix(in srgb, var(--s10-c-nav) 2%, transparent), color-mix(in srgb, var(--s10-c-nav) 2%, transparent));
+  }
+  .frame:not(.m)[data-desk="10"] .dd.show-hover a:nth-child(4) { color: inherit; }
+  /* set10_searchBar + set10_search: a 425px stack of chips under the menu, the page dimmed behind */
+  .frame:not(.m)[data-desk="10"] .d-search {
+    left: var(--d-nav-left, auto); right: calc(var(--pad-x) + 41px); top: 55px; width: auto; height: auto; padding: 0; overflow: visible; /* from the first menu chip to the X chip */
+    display: flex; flex-direction: column; gap: 2px; background: none; color: var(--s10-c-nav); z-index: 3;
+  }
+  .frame:not(.m)[data-desk="10"] .d-search .ds-head, .frame:not(.m)[data-desk="10"] .d-search .res-label, .frame:not(.m)[data-desk="10"] .d-list { display: none; }
+  .frame:not(.m)[data-desk="10"] .d-search .sf { height: 36px; padding: 0 12px; gap: 6px; border: 0; border-radius: 2px; background: var(--s10-c-bg); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
+  .frame:not(.m)[data-desk="10"] .d-search .sf-icon { width: 16px; height: 16px; color: inherit; }
+  .frame:not(.m)[data-desk="10"] .d-search .sf-go { display: block; flex: none; width: 16px; height: 16px; color: inherit; }
+  .frame:not(.m)[data-desk="10"] .d-search :is(.sf input, .sf-mirror) { font: 400 12px/1.2 Pretendard, Inter, sans-serif; text-transform: capitalize; color: inherit; caret-color: currentColor; }
+  .frame:not(.m)[data-desk="10"] .d-search .sf input::placeholder { color: color-mix(in srgb, currentColor 50%, transparent); }
+  .frame:not(.m)[data-desk="10"] .d-search .sf-mirror i { height: 16px; background: currentColor; }
+  .frame:not(.m)[data-desk="10"] .d-search .res { display: flex; flex-direction: column; gap: 2px; margin: 0; }
+  .frame:not(.m)[data-desk="10"] .d-search.is-empty .res { display: none; }
+  .frame:not(.m)[data-desk="10"] .d-search .res-head { order: 2; }
+  .frame:not(.m)[data-desk="10"] .d-search .res-link {
+    display: flex; align-items: center; justify-content: center; width: 100%; height: 36px; border-radius: 2px; text-decoration: none;
+    background: var(--s10-c-bga); color: var(--s10-c-act); font: 400 12px/1 Pretendard, Inter, sans-serif; text-transform: uppercase;
+  }
+  .frame:not(.m)[data-desk="10"] .d-grid { display: flex; flex-direction: column; gap: 2px; margin: 0; }
+  .frame:not(.m)[data-desk="10"] .d-grid > div, .frame.m[data-pair="N"] .m-grid > div {
+    display: grid; grid-template-columns: 80px 1fr; grid-template-rows: 20px 1fr; align-items: start; column-gap: 12px; row-gap: 4px; padding: 16px 12px;
+    border-radius: 2px; background: var(--s10-c-bg); color: var(--s10-c-nav); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+  }
+  .frame:not(.m)[data-desk="10"] .d-grid .ph, .frame.m[data-pair="N"] .m-grid .ph { grid-row: 1 / 3; width: 80px; height: 107px; aspect-ratio: auto; border-radius: 2px; }
+  .frame:not(.m)[data-desk="10"] .d-grid .nm, .frame.m[data-pair="N"] .m-grid .nm { margin: 0; font: 400 13px/20px Inter, Pretendard, sans-serif; text-transform: capitalize; color: inherit; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .frame:not(.m)[data-desk="10"] .d-grid .pr, .frame.m[data-pair="N"] .m-grid .pr { margin: 0; font: 600 13px/19px Pretendard, Inter, sans-serif; color: inherit; }
+  .frame:not(.m)[data-desk="10"] .d-grid .pr s, .frame.m[data-pair="N"] .m-grid .pr s { margin-left: 4px; font: 400 12px/19px Pretendard, Inter, sans-serif; color: inherit; opacity: .5; }
+
+  /* mobileN: logo left, chips right (search · account · bag count · Menu); the logo hides while the menu or search is open */
+  .frame.m[data-pair="N"] { --hdr-h: 54px; }
+  .frame.m[data-pair="N"] .hdr-bar { align-items: flex-end; padding: 0 16px 2px; }
+  .frame.m[data-pair="N"] .hdr-logo { position: static; transform: none; margin-bottom: 9px; transition: opacity .2s ease; }
+  .frame.m[data-pair="N"] .hdr.is-menu .hdr-logo { opacity: 0; }
+  .frame.m[data-pair="N"] .m-left, .frame.m[data-pair="N"] .m-right > :not(.only-n) { display: none !important; }
+  .frame.m[data-pair="N"] .m-right { gap: 2px; height: auto; align-self: flex-end; align-items: center; }
+  .frame.m[data-pair="N"] .m-panel > * { flex: none; }
+  .frame.m[data-pair="N"] .m-right > .only-n {
+    display: flex; align-items: center; justify-content: center; min-width: 32px; width: auto; height: 32px; padding: 0 10px; border-radius: 2px;
+    background: var(--s10-c-bg); color: var(--s10-c-nav); font: 400 12px/1 Inter, Pretendard, sans-serif; text-transform: uppercase;
+    -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); transition: background-color .2s ease, color .2s ease;
+  }
+  .frame.m[data-pair="N"] .m-right > :is(.n-search, .n-x, .n-acct) { width: 32px; padding: 0; }
+  .frame.m[data-pair="N"] .m-right svg { width: 16px; height: 16px; }
+  .frame.m[data-pair="N"] .m-right > :is(.n-x, .n-close) { background: var(--s10-c-bga); color: var(--s10-c-act); }
+  .frame.m[data-pair="N"] .m-right > .n-close { height: 33px; font-size: 13px; }
+  .frame.m[data-pair="N"] .m-right > .only-n:hover { background: var(--s10-c-bga); color: var(--s10-c-act); } /* utility hover = the selected chip */
+  .frame.m[data-pair="N"] .hdr:not(.is-menu) .m-right > :is(.n-x, .n-close),
+  .frame.m[data-pair="N"] .hdr.is-menu:not(.is-search) .m-right > :is(.n-x, .n-menu),
+  .frame.m[data-pair="N"] .hdr.is-search .m-right > :is(.n-search, .n-close) { display: none; }
+  /* the page dims behind the menu and the search */
+  .frame.m[data-pair="N"] .m-dim { z-index: 1; }
+  .frame.m[data-pair="N"] .hdr.is-menu .m-dim { opacity: 1; pointer-events: auto; }
+  /* mobileN 1depth / 2depth: a column of 34px chips; an open one turns into the selected chip with its 2depth inside */
+  .frame.m[data-pair="N"] .m-panel { height: auto; max-height: calc(844px - var(--hdr-h)); padding: 0 16px 24px; background: none; }
+  .frame.m[data-pair="N"] .m-util { display: none; }
+  .frame.m[data-pair="N"] .m-panel:not(.is-search-mode) .m-list.not-a { display: flex; flex-direction: column; gap: 2px; margin: 0; }
+  .frame.m[data-pair="N"] :is(.m-list.not-a > a.m-item, .acc > .m-item) {
+    height: 34px; padding: 0 8px 0 12px; border: 0; border-radius: 2px; background: var(--s10-c-bg); color: var(--s10-c-nav);
+    font: 400 12px/1 Inter, Pretendard, sans-serif; text-transform: uppercase; -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+  }
+  .frame.m[data-pair="N"] .acc-ico { display: flex; color: inherit; }
+  .frame.m[data-pair="N"] .acc-ico svg { width: 20px; height: 20px; }
+  .frame.m[data-pair="N"] .acc.is-open { border-radius: 2px; background: var(--s10-c-bga); color: var(--s10-c-act); }
+  .frame.m[data-pair="N"] .m-list.not-a > :is(a.m-item, .acc:not(.is-open) > .m-item):hover { background: var(--s10-c-bga); color: var(--s10-c-act); }
+  .frame.m[data-pair="N"] .m-list.not-a > .acc.is-open > .m-item { padding-top: 4px; background: none; color: inherit; } /* outranks the chip rule above */
+  .frame.m[data-pair="N"] .acc-sub { padding: 4px 12px 12px; }
+  .frame.m[data-pair="N"] .acc-sub .m-item { height: 32px; padding: 0; border: 0; font: 400 12px/1 Inter, Pretendard, sans-serif; text-transform: uppercase; color: inherit; }
+  /* mobileN_search: field, product chips and a 전체보기 chip, 2px apart */
+  .frame.m[data-pair="N"] .m-panel.is-search-mode { display: flex; flex-direction: column; gap: 2px; }
+  .frame.m[data-pair="N"] .m-panel .sf { height: 44px; margin: 0; padding: 0 10px; gap: 6px; border: 0; border-radius: 2px; background: var(--s10-c-bg); color: var(--s10-c-nav); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
+  .frame.m[data-pair="N"] .m-panel .sf-icon { width: 16px; height: 16px; color: inherit; }
+  .frame.m[data-pair="N"] .m-panel .sf-go { display: block; flex: none; width: 16px; height: 16px; color: inherit; }
+  .frame.m[data-pair="N"] :is(.sf input, .sf-mirror) { font: 400 13px/1.2 Pretendard, Inter, sans-serif; text-transform: capitalize; color: inherit; caret-color: currentColor; }
+  .frame.m[data-pair="N"] .sf input::placeholder { color: color-mix(in srgb, currentColor 50%, transparent); }
+  .frame.m[data-pair="N"] .sf-mirror i { height: 16px; background: currentColor; }
+  .frame.m[data-pair="N"] .m-res { display: flex; flex-direction: column; gap: 2px; margin: 0; }
+  .frame.m[data-pair="N"] .m-panel.is-empty .m-res, .frame.m[data-pair="N"] .m-panel:not(.is-search-mode) .m-res { display: none; }
+  .frame.m[data-pair="N"] .m-res :is(.res-label, ul) { display: none; }
+  .frame.m[data-pair="N"] .m-res .res-head { order: 2; }
+  .frame.m[data-pair="N"] .m-res .res-link {
+    display: flex; align-items: center; justify-content: center; width: 100%; height: 44px; border-radius: 2px; text-decoration: none;
+    background: var(--s10-c-bga); color: var(--s10-c-act); font: 400 13px/1 Pretendard, Inter, sans-serif; text-transform: uppercase;
+  }
+  .frame.m[data-pair="N"] .m-grid { display: flex; flex-direction: column; gap: 2px; margin: 0; }
+  .frame.m[data-pair="N"] .m-grid > div { padding: 12px; row-gap: 2px; }
 
   /* the page starts under the header; the hero fills the rest of the first screen */
   .hero { height: calc(100cqh - var(--hdr-h)); }
@@ -685,25 +1040,364 @@
     background: var(--header-on-media-background); color: var(--header-on-media-nav);
     -webkit-backdrop-filter: none; backdrop-filter: none;
   }
+  /* Set 05 / 06 mobile B · F · I: count badge on the bag icon */
+  .mb-bag { position: relative; }
+  .badge {
+    position: absolute; top: 50%; left: 50%; margin: -15px 0 0 3px; min-width: 14px; height: 14px; padding: 0 4px; border-radius: 7px;
+    display: none; align-items: center; justify-content: center; font: 500 9px/1 Inter, Pretendard, sans-serif;
+    background: var(--header-badge-cart-background); color: var(--header-badge-cart-label);
+  }
+  .frame[data-desk="05"] .badge, .frame.m[data-desk="08"] .badge, .frame[data-desk="09"] .badge { display: flex; }
+  .hdr.on-media .badge { background: var(--header-on-media-badge-cart-background); color: var(--header-on-media-badge-cart-label); }
   /* set05_header: menu left, logo centred, utility right */
-  .frame[data-desk="05"] .hdr-logo { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
-  .frame[data-desk="05"] .d-nav { position: static; transform: none; margin-left: -8px; gap: 4px; }
-  .frame[data-desk="05"] .d-util { margin-left: auto; }
+  .frame:not(.m)[data-layout="05"] .hdr-logo { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+  .frame[data-layout="05"] .d-nav { position: static; transform: none; margin-left: -8px; gap: 4px; }
+  .frame[data-layout="05"] .d-util { margin-left: auto; }
   /* set05_expanded: a full-width panel under the header */
-  .frame[data-desk="05"] .hdr-item[data-dd] { position: static; }
-  .frame[data-desk="05"] .dd { right: 0; padding: 12px var(--pad-x) 28px; }
-  .frame[data-desk="05"] .dd a { padding: 7px 0; }
+  .frame[data-layout="05"] .hdr-item[data-dd] { position: static; }
+  .frame[data-layout="05"] .dd { right: 0; padding: 12px var(--pad-x) 28px; }
+  .frame[data-layout="05"] .dd a { padding: 7px 0; }
   /* set05_searchBar + set05_searchResult: the header stays, a panel opens under it and the page is dimmed */
-  .frame[data-desk="05"] .hdr.is-search .d-nav, .frame[data-desk="05"] .hdr.is-search .d-util { display: flex; }
-  .frame[data-desk="05"] .hdr.is-search .d-close { display: none; }
-  .frame[data-desk="05"] .hdr.is-search [data-search] > span { text-decoration: underline; text-underline-offset: 2px; }
-  .frame[data-desk="05"] .d-search { height: auto; padding: 20px var(--pad-x) 32px; }
-  .frame[data-desk="05"] .d-search .res { margin-top: 28px; }
-  .frame[data-desk="05"] .res-link, .frame[data-desk="05"] .d-grid { display: none; }
+  .frame[data-layout="05"] .hdr.is-search .d-nav, .frame[data-layout="05"] .hdr.is-search .d-util { display: flex; }
+  .frame[data-layout="05"] .hdr.is-search .d-close { display: none; }
+  .frame[data-layout="05"] .hdr.is-search [data-search] > span { text-decoration: underline; text-underline-offset: 2px; }
+  .frame[data-layout="05"] .d-search { height: auto; padding: 20px var(--pad-x) 32px; }
+  .frame[data-layout="05"] .d-search .res { margin-top: 28px; }
+  .frame[data-layout="05"] .res-link, .frame[data-layout="05"] .d-grid { display: none; }
   .d-list { display: none; margin: 14px 0 0; padding: 0; list-style: none; color: var(--header-search-result); }
   .d-list li { padding: 6px 0; }
-  .d-list li:hover, .d-list.show-hover li:nth-child(3) { color: var(--header-search-result-hover); }
-  .frame[data-desk="05"] .d-list { display: block; }
+  .frame[data-layout="05"] .d-list { display: block; }
+  /* Set 05 review (Figma 7327:61520) */
+  .frame:not(.m)[data-desk="05"] .d-nav { gap: 12px; }
+  .frame:not(.m)[data-desk="05"] .dd { padding: 12px var(--pad-x) 24px; }
+  .frame:not(.m)[data-desk="05"] .dd a { padding: 8px 0; line-height: 16px; }
+  .frame:not(.m)[data-desk="05"] .hdr.is-search [data-search] > span { text-decoration: none; }
+  .frame:not(.m)[data-desk="05"] .d-search { padding: 36px var(--pad-x); }
+  .frame:not(.m)[data-desk="05"] .d-search .res { margin-top: 40px; }
+  .frame[data-desk="05"] :is(.sf input, .sf-mirror) { font-family: Pretendard, Inter, sans-serif; text-transform: capitalize; }
+  .frame:not(.m)[data-desk="05"] .res-label { font: 500 13px/1.2 Pretendard, Inter, sans-serif; }
+  .frame:not(.m)[data-desk="05"] .d-list { margin-top: 16px; text-transform: capitalize; }
+  .frame:not(.m)[data-desk="05"] .d-list li { padding: 8px 0; line-height: 16px; cursor: pointer; }
+  .frame:not(.m)[data-desk="05"] .d-list li:hover { color: color-mix(in srgb, var(--header-search-result) 62%, transparent); }
+  /* mobile: 24px icons in 36px buttons (the icon sits 16px from the edge) */
+  .frame.m[data-desk="05"]:is([data-pair="B"], [data-pair="I"]) .m-right { gap: 0; margin-right: -6px; }
+  .frame.m[data-desk="05"]:is([data-pair="B"], [data-pair="I"]) .m-right > .mb { width: 36px; }
+  .frame.m[data-desk="05"]:is([data-pair="B"], [data-pair="F"], [data-pair="I"]) .mb svg { width: 24px; height: 24px; }
+  .frame.m[data-desk="05"][data-pair="I"] { --hdr-h: 60px; }
+  .frame.m[data-desk="05"][data-pair="I"] .m-right { gap: 6px; }
+  .frame.m[data-desk="05"] .m-list .m-item > svg, .frame.m[data-desk="05"] .acc-ico svg { width: 16px; height: 16px; }
+  .frame.m[data-desk="05"] .acc-ico { display: flex; } /* the icon box is the icon, not a text line */
+  .frame.m[data-desk="05"]:not([data-pair="I"]) .m-list .depth1 .m-item, .frame.m[data-desk="05"]:not([data-pair="I"]) .acc > .m-item { padding-right: 4px; }
+  .frame.m[data-desk="05"]:not([data-pair="A"]) .acc > .m-item, .frame.m[data-desk="05"]:not([data-pair="A"]) .m-list.not-a > .m-item { line-height: 16px; } /* Figma rows: py12 → 40 (F), py13 → 42 (B · I) */
+  .frame.m[data-desk="05"][data-pair="B"] .m-list.not-a { margin-top: 4px; }
+  .frame.m[data-desk="05"][data-pair="I"] .m-list.not-a { margin-top: 8px; }
+  .frame.m[data-desk="05"]:is([data-pair="B"], [data-pair="I"]) .acc > .m-item, .frame.m[data-desk="05"]:is([data-pair="B"], [data-pair="I"]) .m-list.not-a > .m-item { padding-top: 13px; padding-bottom: 13px; }
+  .frame.m[data-desk="05"] .acc-sub { padding: 4px 0 8px 12px; }
+  .frame.m[data-desk="05"][data-pair="I"] .acc-sub { padding: 8px 12px 12px; }
+  .frame.m[data-desk="05"]:is([data-pair="B"], [data-pair="I"]) .acc-sub .m-item { padding: 12px 0; }
+  .frame.m[data-desk="05"] .m-util .m-item { text-transform: none; }
+  .frame.m[data-desk="05"] .m-panel { padding-bottom: 16px; }
+  .frame.m[data-desk="05"][data-pair="F"] .m-panel { padding-bottom: 20px; }
+  .frame.m[data-desk="05"][data-pair="F"] .m-panel > .m-util { margin-top: 80px; margin-bottom: -4px; }
+  /* A: the field above the menu, the 2depth back row */
+  .frame.m[data-desk="05"][data-pair="A"] .m-panel .sf { margin: 8px 0 16px; padding: 18px 0 19px; gap: 6px; }
+  .frame.m[data-desk="05"][data-pair="A"] .m-list { margin-top: 0; }
+  .frame.m[data-desk="05"][data-pair="A"] .depth2 .m-back { height: 40px; padding: 0; gap: 0; margin-bottom: 4px; }
+  .frame.m[data-desk="05"][data-pair="A"] .depth2 .m-back svg { width: 16px; height: 16px; }
+  .frame.m[data-desk="05"][data-pair="A"] .depth2 .m-item:not(.m-back) { padding: 10px 0; }
+  /* B · F · I search: 20px sides, the field lower, results closer */
+  .frame.m[data-desk="05"]:is([data-pair="B"], [data-pair="F"], [data-pair="I"]) .m-panel.is-search-mode { padding-left: 20px; padding-right: 20px; }
+  .frame.m[data-desk="05"]:is([data-pair="B"], [data-pair="F"], [data-pair="I"]) .m-panel.is-search-mode .sf { margin: 24px 0 12px; padding: 18px 0 19px; gap: 6px; }
+  .frame.m[data-desk="05"][data-pair="F"] .m-panel.is-search-mode .sf { margin-top: 20px; }
+  .frame.m[data-desk="05"][data-pair="I"] .m-panel.is-search-mode .sf { margin-top: 12px; }
+  .frame.m[data-desk="05"]:is([data-pair="B"], [data-pair="F"], [data-pair="I"]) .m-res { margin-top: 16px; }
+  .frame.m[data-desk="05"]:is([data-pair="B"], [data-pair="F"], [data-pair="I"]) .m-res .res-label { font: 400 12px/1.2 Pretendard, Inter, sans-serif; }
+  .frame.m[data-desk="05"][data-pair="B"] .m-res ul { margin-top: 14px; }
+  .frame.m[data-desk="05"]:is([data-pair="F"], [data-pair="I"]) .m-res ul { margin-top: 16px; }
+  .frame.m[data-desk="05"]:is([data-pair="B"], [data-pair="F"], [data-pair="I"]) .m-res li { padding: 10px 0; text-transform: capitalize; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+
+  /* ── Set 08 + L · Set 09 + M: the header floats as a card, inset from the edges ── */
+  .d-ico { display: none; }
+  .d-ico svg { width: 26px; height: 26px; }
+  .d-ico .badge { margin: -18px 0 0 3px; }
+  .frame:not(.m):is([data-desk="08"], [data-desk="09"]) { --pad-x: 32px; --float: 16px; }
+  .frame.m:is([data-pair="L"], [data-pair="M"]) { --float: 12px; }
+  .frame:not(.m)[data-desk="09"] { --hdr-h: 62px; }
+  .frame.m[data-pair="M"] { --hdr-h: 56px; }
+  .frame:is([data-desk="08"], [data-desk="09"]) .hdr { top: var(--float); margin: var(--float) var(--float) 0; transition: margin .25s ease, top .25s ease; }
+  .frame:is([data-desk="08"], [data-desk="09"]).is-overlap .hdr { margin-bottom: calc(-1 * (var(--hdr-h) + var(--float))); }
+  .frame:not(.m):is([data-desk="08"], [data-desk="09"]) .dim { top: 0; }
+  /* set08: text utilities, no search icon */
+  .frame:not(.m)[data-desk="08"] .dd { padding: 4px var(--pad-x) 28px; }
+  .frame:not(.m)[data-desk="08"] .dd a { padding: 8px 0; }
+  .frame:not(.m)[data-desk="08"] .sf-icon, .frame[data-pair="L"] .sf-icon { display: none; }
+  .frame:not(.m)[data-desk="08"] .sf input, .frame:not(.m)[data-desk="08"] .sf-mirror { font-size: 16px; }
+  .frame:not(.m)[data-desk="08"] .d-search { padding: 40px var(--pad-x) 36px; }
+  /* set08 review (Figma 7328:60840): 16px gaps, underline hovers, Pretendard search */
+  .frame:not(.m)[data-desk="08"] .d-nav { gap: 16px; }
+  .frame:not(.m)[data-desk="08"] .d-util { gap: 16px; }
+  .frame:not(.m)[data-desk="08"] .dd a, .frame:not(.m)[data-desk="08"] .dd.show-hover a:nth-child(4) { color: inherit; }
+  .frame:not(.m)[data-desk="08"] .dd a:hover, .frame:not(.m)[data-desk="08"] .dd.show-hover a:nth-child(3) { text-decoration: underline; text-underline-offset: 2px; }
+  .frame:not(.m)[data-desk="08"] :is(.sf input, .sf-mirror) { font: 400 16px/1.2 Pretendard, Inter, sans-serif; text-transform: capitalize; }
+  .frame:not(.m)[data-desk="08"] .d-search .res { margin-top: 40px; }
+  .frame:not(.m)[data-desk="08"] .res-label { font: 500 13px/1.2 Pretendard, Inter, sans-serif; }
+  .frame:not(.m)[data-desk="08"] .d-list { margin-top: 16px; text-transform: capitalize; }
+  .frame:not(.m)[data-desk="08"] .d-list li { padding: 8px 0; }
+  .frame:not(.m)[data-desk="08"] .d-list li:hover { text-decoration: underline; text-underline-offset: 2px; }
+  /* Set 08 re-review (Figma 7328:60840): 16px rows, a 52px field, no underline on Search, 24px mobile icons */
+  .frame:not(.m)[data-desk="08"] .dd a, .frame:not(.m)[data-desk="08"] :is(.d-list li, .res-label) { line-height: 16px; }
+  .frame:not(.m)[data-desk="08"] .d-search .sf { padding: 16px 0; }
+  .frame:not(.m)[data-desk="08"] .hdr.is-search [data-search] > span { text-decoration: none; }
+  .frame[data-desk="08"] .sf-mirror i { height: 16px; }
+  .frame.m[data-pair="L"] .mb svg { width: 24px; height: 24px; }
+  .frame[data-desk="08"]:not(.is-overlap) .hdr { margin-bottom: var(--float); } /* sub pages: the card sits in a strip with a gap below */
+  /* set09: rounded card, icon utilities with a bag badge, big 2depth menu; the other 1depth items dim while it's open */
+  .frame:not(.m)[data-desk="09"] .hdr-bar { border-radius: 16px; font: 500 14px/1.2 Inter, sans-serif; }
+  .frame:not(.m)[data-desk="09"] .hdr:is(.is-open, .is-search) .hdr-bar { border-radius: 20px 20px 0 0; }
+  .frame:not(.m)[data-desk="09"] .d-txt { display: none; }
+  .frame:not(.m)[data-desk="09"] .d-ico { display: flex; padding: 0 8px; }
+  .frame:not(.m)[data-desk="09"] .d-util { gap: 0; }
+  .frame:not(.m)[data-desk="09"] .d-nav { gap: 12px; }
+  .frame:not(.m)[data-desk="09"] .hdr.is-open .d-nav > .hdr-item:not([data-dd]) { color: color-mix(in srgb, var(--header-nav) 20%, transparent); }
+  .frame:not(.m)[data-desk="09"] .hdr.is-open .hdr-item > span { text-decoration: none; }
+  .frame:not(.m)[data-desk="09"] .dd { padding: 16px var(--pad-x) 40px; border-radius: 0 0 20px 20px; }
+  .frame:not(.m)[data-desk="09"] .dd a { padding: 8px 0; font: 600 24px/1.2 Inter, sans-serif; }
+  .frame:not(.m)[data-desk="09"] .d-search { padding: 24px var(--pad-x) 36px; border-radius: 0 0 20px 20px; }
+  .frame:not(.m)[data-desk="09"] .sf { border-bottom: 0; padding: 8px 0; gap: 10px; }
+  .frame:not(.m)[data-desk="09"] .sf-icon { width: 24px; height: 24px; }
+  .frame:not(.m)[data-desk="09"] .sf input, .frame:not(.m)[data-desk="09"] .sf-mirror { font: 600 20px/1.2 Inter, Pretendard, sans-serif; }
+  .frame:not(.m)[data-desk="09"] .sf-mirror i { height: 20px; }
+  .frame[data-desk="09"]:not(.is-overlap) .hdr { margin-bottom: var(--float); } /* sub pages: a gap under the card */
+  .frame:not(.m)[data-desk="09"] .d-search .res { margin-top: 32px; }
+  .frame:not(.m)[data-desk="09"] .d-list { font-size: 14px; }
+  .frame:not(.m)[data-desk="09"] .d-list li { padding: 8px 0; }
+  /* set09 review (Figma 7328:61564): 16px corners, hover dims the other 1depth items, 2depth hover nudges 4px, Pretendard search */
+  .frame:not(.m)[data-desk="09"] .hdr:is(.is-open, .is-search) .hdr-bar { border-radius: 16px 16px 0 0; }
+  .frame:not(.m)[data-desk="09"] :is(.dd, .d-search) { border-radius: 0 0 16px 16px; }
+  .frame:not(.m)[data-desk="09"] .d-nav:hover > .hdr-item:not(:hover) { color: color-mix(in srgb, var(--header-nav) 20%, transparent); }
+  .frame:not(.m)[data-desk="09"] .dd a { color: inherit; transition: padding .15s ease; }
+  .frame:not(.m)[data-desk="09"] .dd a:hover, .frame:not(.m)[data-desk="09"] .dd.show-hover a:nth-child(4) { color: inherit; padding-left: 4px; }
+  .frame:not(.m)[data-desk="09"] .d-search { padding: 32px var(--pad-x) 40px; }
+  .frame:not(.m)[data-desk="09"] .sf { padding: 10px 0; }
+  .frame:not(.m)[data-desk="09"] :is(.sf input, .sf-mirror) { font-family: Pretendard, Inter, sans-serif; text-transform: capitalize; }
+  .frame:not(.m)[data-desk="09"] .d-search .res { margin-top: 40px; }
+  .frame:not(.m)[data-desk="09"] .res-label { font: 500 13px/1.2 Pretendard, Inter, sans-serif; }
+  .frame:not(.m)[data-desk="09"] .d-list { margin-top: 16px; text-transform: capitalize; }
+  .frame:not(.m)[data-desk="09"] .d-list li:hover { color: color-mix(in srgb, var(--header-search-result) 62%, transparent); }
+
+  /* mobileL · mobileM: the open menu fills the card down to the bottom inset, over a dimmed page; search takes the whole screen */
+  .frame.m:is([data-pair="L"], [data-pair="M"]) .hdr.is-search { top: 0; margin: 0; }
+  .frame.m:is([data-pair="L"], [data-pair="M"]) .m-dim { left: calc(-1 * var(--float)); top: calc(-1 * var(--float)); width: 390px; z-index: 1; }
+  .frame.m:is([data-pair="L"], [data-pair="M"]) .hdr.is-menu:not(.is-search) .m-dim { opacity: 1; pointer-events: auto; }
+  .frame.m[data-pair="L"] .hdr.is-menu:not(.is-search) .m-panel { height: calc(844px - 2 * var(--float) - var(--hdr-h)); padding: 12px 18px 18px; }
+  .frame.m[data-pair="L"] .m-list { margin-top: 0; }
+  .frame.m[data-pair="L"] .m-list .m-item { padding: 13px 4px 13px 0; font-size: 14px; }
+  .frame.m[data-pair="L"] .m-list .m-item svg { width: 17px; height: 17px; }
+  .frame.m[data-pair="L"] .m-util .m-item { font-size: 13px; padding: 10px 0; }
+  /* mobileL 2depth: a small grey back row, 11px rows, no utilities */
+  .frame.m[data-pair="L"] .depth2 .m-back { height: 43px; padding: 0; gap: 0; font-size: 13px; }
+  .frame.m[data-pair="L"] .depth2 .m-back svg { width: 16px; height: 16px; }
+  .frame.m[data-pair="L"] .depth2 .m-item:not(.m-back) { padding: 11px 0; }
+  .frame.m[data-pair="L"] .m-panel[data-depth="2"] > .m-util { display: none; }
+  /* mobileL_search */
+  .frame.m[data-pair="L"] .m-panel.is-search-mode { padding: 0 20px; }
+  .frame.m[data-pair="L"] .m-panel .sf { margin: 40px 0 12px; padding: 19px 0 20px; }
+  .frame.m[data-pair="L"] :is(.sf input, .sf-mirror) { font: 400 16px/1.2 Pretendard, Inter, sans-serif; text-transform: capitalize; }
+  .frame.m[data-pair="L"] .m-res { margin-top: 0; padding-top: 20px; }
+  .frame.m[data-pair="L"] .res-label { font: 400 12px/1.2 Pretendard, Inter, sans-serif; }
+  .frame.m[data-pair="L"] .m-res ul { margin-top: 14px; font: 400 14px/1.2 Inter, Pretendard, sans-serif; text-transform: capitalize; }
+  .frame.m[data-pair="L"] .m-res li { padding: 11px 0; }
+  .frame.m[data-pair="M"] .hdr-bar { border-radius: 12px; }
+  .frame.m[data-pair="M"] .hdr:is(.is-menu, .is-search) .hdr-bar { border-radius: 12px 12px 0 0; }
+  .frame.m[data-pair="M"] .hdr.is-search .hdr-bar { border-radius: 0; }
+  .frame.m[data-pair="M"] .mb svg { width: 24px; height: 24px; }
+  .frame.m[data-pair="M"] .m-right { gap: 12px; }
+  .frame.m[data-pair="M"] .hdr.is-menu:not(.is-search) .m-panel { height: calc(844px - 2 * var(--float) - var(--hdr-h)); padding: 0 20px 24px; border-radius: 0 0 14px 14px; }
+  .frame.m[data-pair="M"] .m-list { margin-top: 0; }
+  .frame.m[data-pair="M"] .depth1 .m-item { padding: 8px 0; font: 500 28px/1.2 Inter, sans-serif; }
+  .frame.m[data-pair="M"] .depth1 .m-item svg { display: none; }
+  .frame.m[data-pair="M"] .depth2 .m-item { padding: 8px 0; font: 500 18px/1.2 Inter, sans-serif; }
+  .frame.m[data-pair="M"] .depth2 .m-back { font-size: 14px; padding: 4px 0 12px; }
+  .frame.m[data-pair="M"] .m-util .m-item { font: 500 14px/1.2 Inter, sans-serif; padding: 11px 0; }
+  .frame.m[data-pair="M"] .sf { border-bottom: 0; }
+  .frame.m[data-pair="M"] .sf input, .frame.m[data-pair="M"] .sf-mirror { font-size: 16px; }
+  /* mobileM 2depth: back chevron · title · close in the header; the list starts 12px down, no utilities */
+  .frame:not([data-pair="M"]) .only-m, .frame.m[data-pair="M"] .only-m { display: none; }
+  .frame.m[data-pair="M"] .hdr.is-menu:not(.is-search):has(.m-panel[data-depth="2"]) .m-hback { display: flex; position: absolute; left: var(--pad-x); top: 50%; transform: translateY(-50%); }
+  .frame.m[data-pair="M"] .hdr.is-menu:not(.is-search):has(.m-panel[data-depth="2"]) .m-htitle { display: block; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font: 500 14px/1.2 Inter, sans-serif; color: var(--header-nav); }
+  .frame.m[data-pair="M"] .depth2 .m-back { display: none; }
+  .frame.m[data-pair="M"] .depth2 { padding-top: 12px; }
+  .frame.m[data-pair="M"] .m-panel[data-depth="2"] > .m-util { display: none; }
+  /* mobileM_search: icon + 18px Pretendard, no line, 28px sides */
+  .frame.m[data-pair="M"] .m-panel.is-search-mode { padding: 0 28px; }
+  .frame.m[data-pair="M"] .m-panel .sf { margin: 18px 0; padding: 18px 0; gap: 6px; }
+  .frame.m[data-pair="M"] .m-panel .sf-icon { width: 22px; height: 22px; }
+  .frame.m[data-pair="M"] :is(.sf input, .sf-mirror) { font: 500 18px/1.2 Pretendard, Inter, sans-serif; text-transform: capitalize; }
+  .frame.m[data-pair="M"] .sf-mirror i { height: 22px; }
+  .frame.m[data-pair="M"] .m-res { margin-top: 0; padding-top: 8px; }
+  .frame.m[data-pair="M"] .res-label { font: 400 13px/1.2 Pretendard, Inter, sans-serif; }
+  .frame.m[data-pair="M"] .m-res ul { margin-top: 16px; font: 500 14px/1.2 Inter, Pretendard, sans-serif; text-transform: capitalize; }
+  .frame.m[data-pair="M"] .m-res li { padding: 11px 0; }
+
+  /* ── Set 04 + E: no header bar — the menu, icons and buttons float as blurred pills ── */
+  /* --s4-*: the plain colours, swapped for the 미디어 위 ones while the header sits over the hero */
+  .frame[data-desk="04"] .hdr {
+    --s4-nav: var(--header-nav); --s4-bg: var(--header-nav-background); --s4-bga: var(--header-nav-background-active); --s4-act: var(--header-nav-active);
+    --s4-mnav: var(--header-menu-nav); --s4-mback: var(--header-menu-back); --s4-mutil: var(--header-menu-utility);
+  }
+  .frame[data-desk="04"] .hdr.on-media {
+    --s4-nav: var(--header-on-media-nav); --s4-bg: var(--header-on-media-nav-background); --s4-bga: var(--header-on-media-nav-background-active); --s4-act: var(--header-on-media-nav-active);
+    --s4-mnav: var(--header-menu-on-media-nav); --s4-mback: var(--header-menu-on-media-back); --s4-mutil: var(--header-menu-on-media-utility);
+  }
+  .frame[data-desk="04"] .hdr .hdr-bar, .frame[data-desk="04"] .hdr.on-media .hdr-bar { background: transparent; color: var(--s4-nav); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .frame[data-desk="04"] .hdr-item:hover > span, .frame[data-desk="04"] .hdr-item.is-open > span { text-decoration: none; }
+  /* set04_header: 97px tall, logo left, the menu pill centred, three icon circles right */
+  .frame:not(.m)[data-desk="04"] { --hdr-h: 97px; --pad-x: 32px; }
+  .frame:not(.m)[data-desk="04"] .hdr-logo { width: 90px; height: 20px; }
+  .frame:not(.m)[data-desk="04"] .d-nav {
+    top: 50%; height: auto; transform: translate(-50%, -50%); gap: 0; padding: 4px; border-radius: 9999px;
+    background: var(--s4-bg); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); transition: background-color .25s ease;
+  }
+  .frame:not(.m)[data-desk="04"] .d-nav > .hdr-item { height: auto; padding: 12px 18px; border-radius: 9999px; font: 500 14px/1.2 Inter, sans-serif; transition: background-color .2s ease, color .2s ease; }
+  .frame:not(.m)[data-desk="04"] .hdr-item[data-dd] { position: static; }
+  .frame:not(.m)[data-desk="04"] .hdr.is-open .hdr-item[data-dd] { background: var(--s4-bga); color: var(--s4-act); }
+  .frame:not(.m)[data-desk="04"] .d-util { height: auto; gap: 4px; margin-right: 0; }
+  .frame:not(.m)[data-desk="04"] .d-txt { display: none; }
+  .frame:not(.m)[data-desk="04"] .d-ico {
+    display: flex; justify-content: center; width: 49px; height: 49px; padding: 0; border-radius: 50%;
+    background: var(--s4-bg); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); transition: background-color .25s ease;
+  }
+  .frame:not(.m)[data-desk="04"] .d-ico svg { width: 26px; height: 26px; }
+  .frame:not(.m)[data-desk="04"] .dim { top: 0; }
+  /* set04_expanded: a rounded card under the menu pill, as wide as it */
+  .frame:not(.m)[data-desk="04"] .dd {
+    left: 0; right: 0; top: calc(100% + 7px); min-width: 0; padding: 16px 24px; border-radius: 20px;
+    background: var(--s4-bg); color: var(--s4-mnav); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+  }
+  .frame:not(.m)[data-desk="04"] .dd a { padding: 7px 0; font: 500 18px/1.2 Inter, sans-serif; }
+  .frame:not(.m)[data-desk="04"] .dd a:hover, .frame:not(.m)[data-desk="04"] .dd.show-hover a:nth-child(5) { color: color-mix(in srgb, var(--s4-mnav) 50%, transparent); }
+  .frame:not(.m)[data-desk="04"] .dd.show-hover a:nth-child(4) { color: inherit; }
+  /* set04_searchBar: the search circle widens into a 360px field; the page behind is dimmed, nothing opens under it */
+  .frame:not(.m)[data-desk="04"] .hdr.is-search .d-nav { display: none; }
+  .frame:not(.m)[data-desk="04"] .hdr.is-search .d-util { display: flex; }
+  .frame:not(.m)[data-desk="04"] .hdr.is-search .d-ico[data-search], .frame:not(.m)[data-desk="04"] .hdr.is-search .d-close { display: none; }
+  .frame:not(.m)[data-desk="04"] .hdr.is-search .d-util::before { content: ''; width: 360px; height: 49px; }
+  .frame:not(.m)[data-desk="04"] .d-search {
+    left: auto; right: calc(var(--pad-x) + 2 * 49px + 2 * 4px); top: 24px; width: 360px; height: 49px; padding: 0 14px 0 16px; overflow: hidden;
+    display: flex; align-items: center; gap: 8px; border-radius: 9999px; color: var(--s4-nav);
+    background: var(--s4-bg); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); z-index: 3;
+  }
+  .frame:not(.m)[data-desk="04"] .d-search :is(.ds-head, .res) { display: none; }
+  .frame:not(.m)[data-desk="04"] .d-search .sf { flex: 1; min-width: 0; padding: 0; gap: 6px; border: 0; }
+  .frame:not(.m)[data-desk="04"] .d-search .sf-icon { width: 20px; height: 20px; color: inherit; }
+  .frame:not(.m)[data-desk="04"] .d-search :is(.sf input, .sf-mirror) { font: 400 14px/1.2 Pretendard, Inter, sans-serif; color: inherit; caret-color: currentColor; }
+  .frame:not(.m)[data-desk="04"] .d-search .sf input::placeholder { color: color-mix(in srgb, currentColor 50%, transparent); }
+  .frame:not(.m)[data-desk="04"] .d-search .sf-mirror i { background: currentColor; }
+  .d-search > .s4-x { display: none; } /* outranks .dw-x, so only Set 04 shows it */
+  .frame:not(.m)[data-desk="04"] .s4-x { display: flex; flex: none; }
+  .frame:not(.m)[data-desk="04"] .s4-x svg { width: 21px; height: 21px; }
+
+  /* mobileE: logo left; search · bag circles and a Menu pill right */
+  .frame.m[data-pair="E"] { --hdr-h: 76px; }
+  .frame[data-pair="E"] .hdr-logo { position: static; transform: none; }
+  .frame[data-pair="E"] .m-right { gap: 4px; }
+  .frame[data-pair="E"] .m-right > .mb { height: auto; transition: background-color .25s ease, color .25s ease; }
+  .frame[data-pair="E"] .m-right > .mb:not(.only-e) { width: 36px; min-width: 0; height: 36px; border-radius: 50%; background: var(--s4-bg); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
+  .frame[data-pair="E"] .m-right > .mb:not(.only-e) svg { width: 16px; height: 16px; }
+  .frame[data-pair="E"] .m-right > .only-e { height: 40px; padding: 0 16px; border-radius: 9999px; font: 500 13px/1.2 Inter, sans-serif; background: var(--s4-bg); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
+  .frame[data-pair="E"] .only-e.mb-close { background: var(--s4-bga); color: var(--s4-act); }
+  .frame[data-pair="E"] .hdr.is-menu .hdr-bar { justify-content: flex-end; }
+  .frame[data-pair="E"] .hdr.is-menu :is(.hdr-logo, .m-right > :not(.only-e.mb-close)) { display: none !important; }
+  .frame[data-pair="E"] .hdr.is-menu .only-e.mb-close { display: flex; }
+  /* mobileE_expanded: the whole screen, behind the header; big 1depth, 2depth with a back link, Sign in at the bottom */
+  .frame[data-pair="E"] .m-panel {
+    top: 0; height: 844px; padding: 62px 16px 0; background: var(--s4-bg); color: var(--s4-mnav);
+    -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+  }
+  .frame[data-pair="E"] .m-list { margin-top: 0; }
+  .frame[data-pair="E"] .depth1 .m-item { height: 50px; padding: 0; font: 500 28px/1.2 Inter, sans-serif; }
+  .frame[data-pair="E"] .depth1 .m-item svg { display: none; }
+  .frame[data-pair="E"] .depth2 { display: flex; flex-direction: column; gap: 4px; }
+  .frame[data-pair="E"] .m-panel[data-depth="1"] .depth2 { display: none; }
+  .frame[data-pair="E"] .depth2 .m-item { height: 40px; padding: 0; font: 500 18px/1.2 Inter, sans-serif; }
+  .frame[data-pair="E"] .depth2 .m-back { height: 39px; gap: 2px; font-size: 16px; color: var(--s4-mback); }
+  .frame[data-pair="E"] .depth2 .m-back svg { width: 16px; height: 16px; }
+  .frame[data-pair="E"] .m-panel > .m-util { margin-top: auto; padding: 24px 0; color: var(--s4-mutil); }
+  .frame[data-pair="E"] .m-util .m-item { height: 44px; padding: 0; font: 500 16px/1.2 Inter, sans-serif; }
+  /* mobileE_search: a pill field 200px down the same dark screen; no result list */
+  .frame[data-pair="E"] .m-panel.is-search-mode { padding: 200px 20px 0; }
+  .frame[data-pair="E"] .m-panel.is-search-mode .sf {
+    height: 52px; padding: 0 8px 0 16px; gap: 6px; border: 0; border-radius: 9999px; color: var(--s4-nav);
+    background: var(--s4-bg); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+  }
+  .frame[data-pair="E"] .sf-icon { width: 20px; height: 20px; color: inherit; }
+  .frame[data-pair="E"] :is(.sf input, .sf-mirror) { font: 500 16px/1.2 Pretendard, Inter, sans-serif; color: inherit; caret-color: currentColor; }
+  .frame[data-pair="E"] .sf input::placeholder { color: color-mix(in srgb, currentColor 50%, transparent); }
+  .frame[data-pair="E"] .sf-mirror i { height: 20px; background: currentColor; }
+  .frame[data-pair="E"] .m-res { display: none; }
+
+  /* ── Set 11: hamburger left, logo centred, icons right; the menu is a drawer from the left, search one from the right ── */
+  .d-burger, .d-dim, .d-drawer, .ds-head { display: none; }
+  .frame:not(.m)[data-layout="11"] .d-burger { display: flex; margin-left: -8px; }
+  .frame:not(.m)[data-layout="11"] .d-burger svg, .frame:not(.m)[data-layout="11"] .d-ico svg { width: 20px; height: 20px; }
+  .frame:not(.m)[data-layout="11"] .d-nav, .frame:not(.m)[data-layout="11"] .d-txt, .frame:not(.m)[data-layout="11"] .hdr.is-search .d-close { display: none; }
+  .frame:not(.m)[data-layout="11"] .d-ico { display: flex; padding: 0 8px; }
+  .frame:not(.m)[data-layout="11"] .d-util, .frame:not(.m)[data-layout="11"] .hdr.is-search .d-util { display: flex; gap: 0; }
+  .frame:not(.m)[data-layout="11"] .hdr-logo { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+  .frame[data-layout="11"] .badge { display: flex; }
+  /* over the media, a hovered utility icon fades to 50% */
+  .frame:not(.m)[data-desk="11"] .d-ico { transition: opacity .2s ease; }
+  .frame:not(.m)[data-desk="11"] .hdr.on-media .d-ico:hover { opacity: .5; }
+  .frame:not(.m)[data-layout="11"] .d-ico .badge { margin: -16px 0 0 2px; }
+  .frame:not(.m)[data-layout="11"] .dim { display: none; }
+  .frame:not(.m)[data-layout="11"] .d-dim {
+    display: block; position: absolute; left: 0; top: 0; width: 100%; height: 1080px; z-index: 4; background: var(--header-backdrop);
+    -webkit-backdrop-filter: blur(var(--backdrop-blur, 0px)); backdrop-filter: blur(var(--backdrop-blur, 0px));
+    opacity: 0; pointer-events: none; transition: opacity .25s ease;
+  }
+  .frame:not(.m)[data-layout="11"] .hdr:is(.is-open, .is-search) .d-dim { opacity: 1; pointer-events: auto; }
+  .frame:not(.m)[data-layout="11"] .d-drawer, .frame:not(.m)[data-layout="11"] .d-search {
+    position: absolute; top: 0; z-index: 5; width: 440px; height: 1080px; padding: 0; overflow-y: auto; scrollbar-width: none;
+    background: var(--header-background); opacity: 0; visibility: hidden;
+    transition: opacity .2s ease, transform .25s ease, visibility 0s linear .25s, background-color .25s ease;
+  }
+  .frame:not(.m)[data-layout="11"] .d-drawer { left: 0; display: flex; flex-direction: column; color: var(--header-menu-nav); transform: translateX(-24px); }
+  .frame:not(.m)[data-layout="11"] .d-search { left: auto; right: 0; display: flex; flex-direction: column; transform: translateX(24px); }
+  .frame:not(.m)[data-layout="11"] .hdr.is-open .d-drawer, .frame:not(.m)[data-layout="11"] .hdr.is-search .d-search {
+    opacity: 1; visibility: visible; transform: none; transition: opacity .2s ease, transform .25s ease, visibility 0s, background-color .25s ease;
+  }
+  .frame:not(.m)[data-layout="11"] :is(.dw-head, .ds-head) { display: flex; align-items: center; flex: none; height: 64px; padding: 0 28px; color: var(--header-nav); order: -1; }
+  .frame:not(.m)[data-layout="11"] .ds-head { justify-content: flex-end; }
+  .dw-x { display: flex; padding: 0; border: 0; background: none; color: inherit; cursor: pointer; }
+  .dw-x svg { width: 20px; height: 20px; }
+  .dw-list { padding: 6px 28px 0; }
+  .dw-item {
+    display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px 0; border: 0; background: none;
+    color: inherit; font: 500 13px/1.2 Inter, sans-serif; text-align: left; text-transform: capitalize; text-decoration: none; cursor: pointer;
+  }
+  .dw-item .acc-ico { display: flex; }
+  .dw-item .acc-ico svg { width: 16px; height: 16px; }
+  .dw-acc .ico-minus { display: none; }
+  .dw-acc.is-open .ico-plus { display: none; }
+  .dw-acc.is-open .ico-minus { display: block; }
+  .dw-sub { display: none; flex-direction: column; padding: 8px 16px; }
+  .dw-acc.is-open .dw-sub { display: flex; }
+  .dw-sub a { padding: 12px 0; font: 400 13px/1.2 Inter, sans-serif; text-transform: capitalize; cursor: pointer; }
+  .dw-sub a:hover, .dw-list > a.dw-item:hover { color: var(--header-menu-nav-hover); }
+  .dw-util { margin-top: auto; display: flex; flex-direction: column; padding: 40px 28px; color: var(--header-menu-utility); }
+  .dw-util a { padding: 8px 0; font: 400 13px/1.2 Inter, sans-serif; cursor: pointer; }
+  /* set11_search: field with an icon, then 검색 결과 · 전체보기 and two products a row */
+  .frame:not(.m)[data-layout="11"] .d-search .sf { margin: 20px 28px 12px; padding: 20px 0 21px; gap: 6px; }
+  .frame:not(.m)[data-layout="11"] .d-search .res { margin: 0; padding: 20px 28px 40px; }
+  .frame:not(.m)[data-layout="11"] .res-head { font: 400 12px/1.2 Pretendard, sans-serif; }
+  .frame:not(.m)[data-layout="11"] .d-grid { grid-template-columns: repeat(2, 1fr); gap: 40px 16px; margin-top: 32px; }
+  .frame:not(.m)[data-layout="11"] .d-grid .nm { margin-top: 8px; font: 400 14px/20px Pretendard, sans-serif; }
+  .frame:not(.m)[data-layout="11"] .d-grid .pr { margin-top: 4px; font: 600 14px/20px Pretendard, sans-serif; }
+  .frame:not(.m)[data-layout="11"] .d-list { display: none; }
+  /* mobile G (drawn as F) · I: a 60px bar; G's search keeps the logo */
+  .frame.m[data-layout="11"] { --hdr-h: 60px; }
+  .frame.m[data-desk="11"][data-pair="F"] .hdr.is-search .hdr-logo { display: block; }
 
   /* mobileI: hamburger left, logo centred, search · bag right; the menu is a drawer over a dimmed page */
   .m-dim {
@@ -721,6 +1415,117 @@
   .frame[data-pair="I"] .hdr.is-search .m-right > :not(.mb-close) { display: none; }
   .frame[data-pair="I"] .hdr.is-search .m-right .mb-close { display: flex; }
   .frame[data-pair="I"] .hdr.is-search .hdr-bar { justify-content: flex-end; }
+
+  /* ── Set 12 · 13: Set 11's drawers, 500 wide; over the media, hovering an icon dims the others ── */
+  .dw-big, .dw-back, .d-mtxt, .d-mega, .d-close .x-ico, .m-grid { display: none; }
+  .frame:not(.m):is([data-desk="12"], [data-desk="13"]) :is(.d-drawer, .d-search) { width: 500px; }
+  .frame:not(.m):is([data-desk="12"], [data-desk="13"]) :is(.d-burger, .d-ico) { transition: opacity .2s ease; }
+  .frame:not(.m)[data-desk="12"] .hdr.on-media .hdr-bar:has(:is(.d-burger, .d-ico):hover) :is(.d-burger, .d-ico):not(:hover) { opacity: .4; }
+  /* Set 13: only among the utility icons — the hamburger neither dims nor dims them */
+  .frame:not(.m)[data-desk="13"] .hdr.on-media .d-util:has(.d-ico:hover) .d-ico:not(:hover) { opacity: .4; }
+  /* set12_expanded: uppercase accordion with dividers */
+  .frame:not(.m)[data-desk="12"] .d-drawer { text-transform: uppercase; }
+  .frame:not(.m)[data-desk="12"] .dw-list > :is(.dw-acc, .dw-item) { border-bottom: 1px solid var(--header-menu-nav-border); }
+  .frame:not(.m)[data-desk="12"] .dw-item { padding: 18px 0; font-weight: 400; text-transform: uppercase; }
+  .frame:not(.m)[data-desk="12"] .dw-sub { padding: 0 0 16px; }
+  .frame:not(.m)[data-desk="12"] .dw-sub a { padding: 9px 0; }
+  /* set13: an 80px bar with 24px icons; the drawer lists 1depth in big type, Shop moves to its 2depth list */
+  .frame:not(.m)[data-desk="13"] { --hdr-h: 80px; }
+  .frame:not(.m)[data-desk="13"] :is(.d-burger, .d-ico) svg, .frame:not(.m)[data-desk="13"] .dw-x svg { width: 24px; height: 24px; }
+  .frame:not(.m)[data-desk="13"] :is(.dw-head, .ds-head) { height: var(--hdr-h); padding: 0 32px; }
+  .frame:not(.m)[data-desk="13"] .dw-list { display: none; }
+  .frame:not(.m)[data-desk="13"] .dw-big { display: block; padding: 12px 32px 0; }
+  .frame:not(.m)[data-desk="13"] .d-drawer[data-depth="2"] .dw-x[data-dclose] { display: none; }
+  .frame:not(.m)[data-desk="13"] .d-drawer[data-depth="2"] .dw-back { display: flex; }
+  .dw-back { color: var(--header-nav); }
+  .dwb-1, .dwb-2 { display: flex; flex-direction: column; align-items: flex-start; }
+  .dw-big[data-depth="1"] .dwb-2, .dw-big[data-depth="2"] .dwb-1 { display: none; }
+  .dwb-1 > * { padding: 13px 0; border: 0; background: none; color: inherit; font: 400 34px/1.2 Inter, sans-serif; text-align: left; cursor: pointer; transition: color .2s ease; }
+  .dwb-2 > * { padding: 12px 0; font: 400 28px/1.2 Inter, sans-serif; cursor: pointer; transition: color .2s ease; }
+  .dw-big :is(.dwb-1, .dwb-2):hover > :not(:hover) { color: color-mix(in srgb, var(--header-menu-nav) 20%, transparent); }
+  .frame:not(.m)[data-desk="13"] .dw-util { padding: 40px 32px; }
+  .frame:not(.m)[data-desk="13"] .dw-util a { padding: 10px 0; font-size: 16px; }
+  /* set13_search: a bigger field, then 검색 결과 as a text list */
+  .frame:not(.m)[data-desk="13"] .d-search .sf { margin: 16px 32px 12px; }
+  .frame:not(.m)[data-desk="13"] .d-search .sf-icon { width: 22px; height: 22px; }
+  .frame:not(.m)[data-desk="13"] .d-search :is(.sf input, .sf-mirror) { font-size: 20px; }
+  .frame:not(.m)[data-desk="13"] .d-search .sf-mirror i { height: 22px; }
+  .frame:not(.m)[data-desk="13"] .d-search .res { padding: 20px 32px 40px; }
+  .frame:not(.m)[data-desk="13"] :is(.d-grid, .res-link) { display: none; }
+  .frame:not(.m)[data-desk="13"] .d-list { display: block; margin-top: 16px; font: 400 14px/1.2 Inter, Pretendard, sans-serif; }
+  .frame:not(.m)[data-desk="13"] .d-list li { padding: 10px 0; }
+
+  /* ── Set 14: MENU left, logo centred, search · SIGN IN · BAG (0) right; the menu fills the screen under the bar,
+     search covers it with only CLOSE left in the bar ── */
+  .frame:not(.m)[data-desk="14"] { --pad-x: 28px; }
+  .frame:not(.m)[data-desk="14"] :is(.hdr-bar, .hdr-bar button) { text-transform: uppercase; }
+  .frame:not(.m)[data-desk="14"] .hdr-logo { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+  .frame:not(.m)[data-desk="14"] :is(.d-nav, .dim) { display: none; }
+  .frame:not(.m)[data-desk="14"] .d-mtxt { display: flex; margin-left: -8px; }
+  .d-mtxt > span { display: flex; align-items: center; gap: 4px; }
+  .d-mtxt svg, .d-close .x-ico { flex: none; width: 16px; height: 16px; }
+  .d-mtxt .mt-close, .hdr.is-open .d-mtxt .mt-open { display: none; }
+  .hdr.is-open .d-mtxt .mt-close { display: flex; }
+  .frame:not(.m)[data-desk="14"] .d-util { margin-left: auto; gap: 10px; }
+  .frame:not(.m)[data-desk="14"] .d-util > :is(.d-txt[data-search], .d-ico:not([data-search])) { display: none; }
+  .frame:not(.m)[data-desk="14"] .d-util > .d-ico[data-search] { display: flex; order: -1; }
+  .frame:not(.m)[data-desk="14"] .d-ico svg { width: 18px; height: 18px; }
+  .frame:not(.m)[data-desk="14"] .hdr.is-search :is(.d-mtxt, .hdr-logo) { display: none; }
+  .frame:not(.m)[data-desk="14"] .hdr.is-search .d-close { margin-left: auto; gap: 4px; }
+  .frame:not(.m)[data-desk="14"] .d-close .x-ico { display: block; }
+  .frame:not(.m)[data-desk="14"] .d-mega {
+    position: absolute; left: 0; right: 0; top: 100%; z-index: 2; height: calc(1080px - var(--hdr-h));
+    display: flex; padding: 20px 37px; background: var(--header-background); color: var(--header-menu-nav);
+    opacity: 0; visibility: hidden; transition: opacity .2s ease, visibility 0s linear .2s, background-color .25s ease;
+  }
+  .frame:not(.m)[data-desk="14"] .hdr.is-open .d-mega { opacity: 1; visibility: visible; transition: opacity .2s ease, visibility 0s, background-color .25s ease; }
+  .mg-1, .mg-2 { display: flex; flex-direction: column; align-items: flex-start; }
+  .mg-1 { width: 555px; flex: none; }
+  .mg-1 a { font: 600 76px/92px Inter, sans-serif; letter-spacing: -1px; cursor: pointer; transition: color .2s ease; }
+  .mg-2 { visibility: hidden; padding-top: 4px; }
+  .d-mega.is-sub .mg-2 { visibility: visible; }
+  .mg-2 a { font: 400 44px/61px Inter, sans-serif; cursor: pointer; }
+  .mg-1:hover a:not(:hover), .d-mega.is-sub .mg-1 a:not([data-mg]) { color: color-mix(in srgb, var(--header-menu-nav) 20%, transparent); }
+  .frame:not(.m)[data-desk="14"] .d-search { padding-top: 32px; }
+  .frame:not(.m)[data-desk="14"] .d-search .res { margin-top: 28px; }
+
+  /* ── mobile O · P · Q · R · S (Set 12 · 13 · 14) ── */
+  .frame.m[data-desk="14"] { --hdr-h: 60px; }
+  .frame.m[data-desk="14"] .badge { display: flex; }
+  /* P · S: F's bar with a search icon */
+  .frame.m:is([data-mset="P"], [data-mset="S"]) .hdr:not(.is-menu) .m-right > .only-bi { display: flex !important; }
+  /* P · R · S: the open menu's bar keeps only the X */
+  .frame.m:is([data-mset="P"], [data-mset="R"], [data-mset="S"]) .hdr.is-menu:not(.is-search) :is(.hdr-logo, .m-right) { display: none; }
+  /* O: uppercase accordion · O and P: dividers between 1depth items */
+  .frame.m[data-mset="O"] :is(.m-list.not-a > a.m-item, .acc > .m-item, .m-util .m-item) { text-transform: uppercase; }
+  .frame.m:is([data-mset="O"], [data-mset="P"]) .m-list.not-a > :is(.acc, a.m-item) { border-bottom: 1px solid var(--header-menu-nav-border); }
+  .frame.m:is([data-mset="O"], [data-mset="P"]) .m-list.not-a .m-item { padding: 14px 0; }
+  .frame.m:is([data-mset="O"], [data-mset="P"]) .acc-sub .m-item { padding: 8px 0; }
+  /* Q · R · S: 1depth in big type, Shop moves to a 2depth list with a back link */
+  .frame.m.m:is([data-mset="Q"], [data-mset="R"], [data-mset="S"]) .m-list.not-a { display: none !important; }
+  .frame.m.m:is([data-mset="Q"], [data-mset="R"], [data-mset="S"]) .m-panel:not(.is-search-mode) .m-list.only-alm { display: block !important; }
+  .frame.m:is([data-mset="Q"], [data-mset="R"], [data-mset="S"]) .m-list { margin-top: 4px; }
+  .frame.m:is([data-mset="Q"], [data-mset="R"], [data-mset="S"]) .depth1 .m-item { padding: 10px 0; font: 400 28px/1.2 Inter, sans-serif; }
+  .frame.m:is([data-mset="Q"], [data-mset="R"], [data-mset="S"]) .depth1 .m-item svg { display: none; }
+  .frame.m:is([data-mset="Q"], [data-mset="R"], [data-mset="S"]) .depth2 .m-item { padding: 11px 0; font: 400 18px/1.2 Inter, sans-serif; }
+  .frame.m:is([data-mset="Q"], [data-mset="R"], [data-mset="S"]) .depth2 .m-back { padding: 4px 0 12px; font-size: 13px; }
+  .frame.m[data-mset="S"] .depth1 .m-item { padding: 12px 0; font: 500 34px/1.2 Inter, sans-serif; }
+  .frame.m[data-mset="S"] .depth2 .m-item { padding: 12px 0; font-size: 20px; }
+  .frame.m[data-mset="S"] .m-back span { font-size: 0; }
+  .frame.m[data-mset="S"] .m-back span::after { content: 'Back'; font-size: 13px; }
+  .frame.m[data-mset="R"][data-pair="F"] .m-panel > .m-util { margin-top: auto; }
+  .frame.m[data-mset="S"][data-pair="F"] .m-panel > .m-util { margin-top: 8px; }
+  .frame.m[data-mset="S"] .m-util [data-msearch], .frame.m[data-mset="S"] .m-panel[data-depth="2"] > .m-util { display: none !important; }
+  /* O · P · S search: 검색 결과 · 전체보기, then two products a row */
+  .frame.m:is([data-mset="O"], [data-mset="P"], [data-mset="S"]) .m-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px 8px; margin-top: 16px; }
+  .frame.m:is([data-mset="O"], [data-mset="P"], [data-mset="S"]) .m-res ul { display: none; }
+  .frame.m:is([data-mset="O"], [data-mset="P"], [data-mset="S"]) .m-res .res-link { display: inline; }
+  .m-grid .ph { aspect-ratio: 3 / 4; background: #d9d9d9; }
+  .m-grid .ph.p2 { background: #c9c9c9; } .m-grid .ph.p3 { background: #bdbdbd; } .m-grid .ph.p4 { background: #2b2b2b; }
+  .m-grid p { margin: 0; }
+  .m-grid .nm { margin-top: 8px; font: 400 12px/1.4 Pretendard, sans-serif; color: var(--header-search-product-name); }
+  .m-grid .pr { margin-top: 2px; font: 600 12px/1.4 Pretendard, sans-serif; color: var(--header-search-product-price); }
+  .m-grid .pr s { margin-left: 4px; font-weight: 400; color: var(--header-search-product-price-original); }
 </style>
 </head>
 <body data-depth="depthRoot">
@@ -775,6 +1580,7 @@
   <section class="group">
     <div id="items"></div>
 
+    <div class="logo-box" id="logoBox">
     <div class="logo-row">
       <span id="logoLabel">로고 컬러</span>
       <div class="seg logo-seg" id="logoSeg" role="group" aria-labelledby="logoLabel">
@@ -783,6 +1589,7 @@
       </div>
     </div>
     <p class="hint">로고는 <a class="text-link" href="#" onclick="return false">브랜드 가이드</a>에서 설정 가능해요.</p>
+    </div>
   </section>
 
   <!-- stays at the bottom of the panel -->
@@ -844,6 +1651,7 @@
   <label class="sf">
     <svg class="sf-icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.75" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="m10.5 10.5 3.25 3.25" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
     <span class="sf-box"><input type="text" aria-label="검색" autocomplete="off"><span class="sf-mirror" aria-hidden="true"><b></b><i></i></span></span>
+    <svg class="sf-go" viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 10h13M11.5 5l5 5-5 5"/></svg>
   </label>
 </template>
 
@@ -855,9 +1663,14 @@
       <div class="scroller">
         <header class="hdr">
           <div class="hdr-bar">
+            <button type="button" class="hdr-item d-burger" data-open aria-label="메뉴"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M3.5 6h13M3.5 10h13M3.5 14h13"/></svg></button>
+            <button type="button" class="hdr-item d-mtxt" data-mtoggle>
+              <span class="mt-open"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><path d="M2.5 5h11M2.5 8h11M2.5 11h11"/></svg>Menu</span>
+              <span class="mt-close"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><path d="m4 4 8 8M12 4l-8 8"/></svg>Close</span>
+            </button>
             <div class="hdr-logo" role="img" aria-label="BRAND"></div>
             <nav class="d-nav">
-              <div class="hdr-item" data-dd><span>Shop</span>
+              <div class="hdr-item" data-dd><span>Shop</span><svg class="d-chev" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 6 4 4 4-4"/></svg>
                 <div class="dd">
                   <a>new arrivals</a><a>Essentials</a><a>Classics</a><a>Jackets</a>
                   <a>tops</a><a>skirts</a><a>dresses</a><a>accessories</a>
@@ -869,13 +1682,41 @@
               <a class="hdr-item"><span>The Story</span></a>
             </nav>
             <div class="d-util">
-              <button type="button" class="hdr-item" data-search><span>Search</span></button>
-              <a class="hdr-item"><span>Sign in</span></a>
-              <a class="hdr-item"><span>Bag (0)</span></a>
+              <button type="button" class="hdr-item d-txt" data-search><span>Search</span></button>
+              <a class="hdr-item d-txt"><span>Sign in</span></a>
+              <a class="hdr-item d-txt"><span>Bag (0)</span></a>
+              <button type="button" class="hdr-item d-ico" data-search aria-label="검색"><svg viewBox="0 0 26 26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="11.5" cy="11.5" r="6.5"/><path d="m16.5 16.5 4.5 4.5"/></svg></button>
+              <a class="hdr-item d-ico" aria-label="계정"><svg viewBox="0 0 26 26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="13" cy="9" r="4"/><path d="M5.5 21.5c.8-3.8 3.8-6 7.5-6s6.7 2.2 7.5 6"/></svg></a>
+              <button type="button" class="hdr-item d-x10" data-dclose aria-label="검색 닫기"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><path d="m4 4 8 8M12 4l-8 8"/></svg></button>
+              <a class="hdr-item d-cnt">00</a>
+              <a class="hdr-item d-ico mb-bag" aria-label="장바구니"><svg viewBox="0 0 26 26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M5 9.5h16l-1.2 11H6.2L5 9.5Z"/><path d="M9.5 9.5V8a3.5 3.5 0 0 1 7 0v1.5"/></svg><i class="badge">2</i></a>
             </div>
-            <button type="button" class="hdr-item d-close" data-close><span>Close</span></button>
+            <button type="button" class="hdr-item d-close" data-close><svg class="x-ico" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><path d="m4 4 8 8M12 4l-8 8"/></svg><span>Close</span></button>
           </div>
+          <div class="d-mega" aria-label="메뉴">
+            <nav class="mg-1"><a data-mg>Shop</a><a>About</a><a>Journal</a><a>Info</a><a>The Story</a></nav>
+            <nav class="mg-2"><a>New Arrivals</a><a>Essentials</a><a>Classics</a><a>Jackets</a><a>Tops</a><a>Skirts</a><a>Dresses</a><a>Accessories</a></nav>
+          </div>
+          <div class="d-dim" data-dclose></div>
+          <aside class="d-drawer" aria-label="메뉴">
+            <div class="dw-head"><button type="button" class="dw-x" data-dclose aria-label="닫기"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="m5 5 10 10M15 5 5 15"/></svg></button><button type="button" class="dw-x dw-back" data-dwb-to1 aria-label="뒤로"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="m12 5-5 5 5 5"/></svg></button></div>
+            <nav class="dw-big" data-depth="1">
+              <div class="dwb-1"><button type="button" data-dwb-to2>Shop</button><a>About</a><a>Journal</a><a>Info</a><a>The Story</a></div>
+              <div class="dwb-2"><a>New Arrivals</a><a>Essentials</a><a>Classics</a><a>Jackets</a><a>Tops</a><a>Skirts</a><a>Dresses</a><a>Accessories</a></div>
+            </nav>
+            <nav class="dw-list">
+              <div class="acc dw-acc is-open"><button type="button" class="dw-item" data-dw-toggle><span>shop</span><span class="acc-ico"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" class="ico-plus"><path d="M10 4.5v11M4.5 10h11"/></svg><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" class="ico-minus"><path d="M4.5 10h11"/></svg></span></button>
+                <div class="dw-sub"><a>new arrivals</a><a>essentials</a><a>classics</a><a>jackets</a><a>tops</a><a>skirts</a><a>dresses</a><a>accessories</a></div>
+              </div>
+              <div class="acc dw-acc"><button type="button" class="dw-item" data-dw-toggle><span>about</span><span class="acc-ico"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" class="ico-plus"><path d="M10 4.5v11M4.5 10h11"/></svg><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" class="ico-minus"><path d="M4.5 10h11"/></svg></span></button>
+                <div class="dw-sub"><a>brand</a><a>stores</a></div>
+              </div>
+              <a class="dw-item">journal</a><a class="dw-item">info</a><a class="dw-item">the story</a>
+            </nav>
+            <div class="dw-util"><a>Sign in</a><a>Bag (0)</a></div>
+          </aside>
           <div class="d-search is-empty" data-sf-host>
+            <div class="ds-head"><button type="button" class="dw-x" data-dclose aria-label="닫기"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="m5 5 10 10M15 5 5 15"/></svg></button></div>
             <div class="res">
               <div class="res-head"><span class="res-label">검색 결과</span><a class="res-link">전체보기</a></div>
               <div class="d-grid">
@@ -886,6 +1727,7 @@
               </div>
               <ul class="d-list"><li>Product Name</li><li>CH 03 Essence Lounge Desert Taupe</li><li>Square Moduler Coffee Table</li><li>Handcrafted Solid Oak Object Natural Finish</li></ul>
             </div>
+            <button type="button" class="dw-x s4-x" data-dclose aria-label="검색 닫기"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="m5 5 10 10M15 5 5 15"/></svg></button>
           </div>
         </header>
         <div class="page"></div>
@@ -903,6 +1745,8 @@
           <div class="scroller">
             <header class="hdr">
               <div class="hdr-bar">
+                <button type="button" class="mb m-hback only-m" data-hback aria-label="뒤로"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="m12 5-5 5 5 5"/></svg></button>
+                <span class="m-htitle only-m">Shop</span>
                 <div class="m-left">
                   <button type="button" class="mb mb-open only-a" data-menu>Menu</button>
                   <button type="button" class="mb mb-close only-a" data-close>Close</button>
@@ -911,10 +1755,18 @@
                 </div>
                 <div class="hdr-logo" role="img" aria-label="BRAND"></div>
                 <div class="m-right">
+                  <button type="button" class="mb only-n n-search" data-msearch aria-label="검색"><svg viewBox="0 0 26 26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="11.5" cy="11.5" r="6.5"/><path d="m16.5 16.5 4.5 4.5"/></svg></button>
+                  <button type="button" class="mb only-n n-x" data-close aria-label="검색 닫기"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><path d="m4 4 8 8M12 4l-8 8"/></svg></button>
+                  <a class="mb only-n n-acct" aria-label="계정"><svg viewBox="0 0 26 26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="13" cy="9" r="4"/><path d="M5.5 21.5c.8-3.8 3.8-6 7.5-6s6.7 2.2 7.5 6"/></svg></a>
+                  <a class="mb only-n n-cnt">00</a>
+                  <button type="button" class="mb only-n n-menu" data-menu>Menu</button>
+                  <button type="button" class="mb only-n n-close" data-close>Close</button>
                   <a class="mb only-a">Bag (0)</a>
                   <button type="button" class="mb only-bi" data-msearch aria-label="검색"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="9" cy="9" r="5.5"/><path d="m13 13 3.5 3.5"/></svg></button>
-                  <a class="mb not-a" aria-label="장바구니"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M4.5 7h11l-.8 9.5H5.3L4.5 7Z"/><path d="M7.5 7V5.5a2.5 2.5 0 0 1 5 0V7"/></svg></a>
+                  <a class="mb mb-bag not-a" aria-label="장바구니"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M4.5 7h11l-.8 9.5H5.3L4.5 7Z"/><path d="M7.5 7V5.5a2.5 2.5 0 0 1 5 0V7"/></svg><i class="badge">2</i></a>
                   <button type="button" class="mb mb-open only-b" data-menu aria-label="메뉴"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M3.5 6h13M3.5 10h13M3.5 14h13"/></svg></button>
+                  <button type="button" class="mb mb-open only-e" data-menu>Menu</button>
+                  <button type="button" class="mb mb-close only-e" data-close>Close</button>
                   <button type="button" class="mb mb-close not-a" data-close aria-label="닫기"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="m5 5 10 10M15 5 5 15"/></svg></button>
                 </div>
               </div>
@@ -924,11 +1776,17 @@
                 <div class="m-res">
                   <div class="res-head"><span class="res-label">검색 결과</span><a class="res-link">전체보기</a></div>
                   <ul><li>Product Name</li><li>CH 03 Essence Lounge Desert Taupe</li><li>Search Result Max 1line Search Result Max 1line Search Result</li><li>Handcrafted Solid Oak Object Natural Finish</li></ul>
+                  <div class="m-grid">
+                    <div><div class="ph"></div><p class="nm">Product Name</p><p class="pr">120,000원<s>200,000원</s></p></div>
+                    <div><div class="ph p2"></div><p class="nm">CH 03 Essence Lounge Desert Taupe</p><p class="pr">180,000원</p></div>
+                    <div><div class="ph p3"></div><p class="nm">Square Moduler Coffee Table</p><p class="pr">250,000원</p></div>
+                    <div><div class="ph p4"></div><p class="nm">Handcrafted Solid Oak Object Natural Finish</p><p class="pr">90,000원</p></div>
+                  </div>
                 </div>
-                <nav class="m-list only-a">
+                <nav class="m-list only-alm">
                   <div class="depth1">
                     <button type="button" class="m-item" data-to2><span>shop</span><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="m8 5 5 5-5 5"/></svg></button>
-                    <a class="m-item">about</a><a class="m-item">journal</a><a class="m-item">info</a><a class="m-item">the story</a>
+                    <a class="m-item"><span>about</span><svg class="only-c" viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="m8 5 5 5-5 5"/></svg></a><a class="m-item">journal</a><a class="m-item">info</a><a class="m-item">the story</a>
                   </div>
                   <div class="depth2">
                     <button type="button" class="m-item m-back" data-to1><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="m12 5-5 5 5 5"/></svg><span>shop</span></button>
@@ -996,7 +1854,18 @@ const MOBILE_W = 390, MOBILE_H = 844;
    pairing — Figma "유저 컬러 편집 항목 · Set 01 페어링별" and "· Set 05/06 페어링별". Set 05 / 06 can sit over the hero. */
 const DESKS = {
   '01': { name: 'Set 01', overlap: false },
+  '02': { name: 'Set 02', overlap: false },
+  '03': { name: 'Set 03', overlap: false },
+  '04': { name: 'Set 04', overlap: true },
   '05': { name: 'Set 05 / 06', overlap: true },
+  '07': { name: 'Set 07', overlap: false },
+  '08': { name: 'Set 08', overlap: true },
+  '09': { name: 'Set 09', overlap: true },
+  '10': { name: 'Set 10', overlap: true },
+  '11': { name: 'Set 11', overlap: true },
+  '12': { name: 'Set 12', overlap: true },
+  '13': { name: 'Set 13', overlap: true },
+  '14': { name: 'Set 14', overlap: true },
 };
 const PAIRS = {
   '01': {
@@ -1004,62 +1873,193 @@ const PAIRS = {
     B: { desc: '모바일: 아이콘 · 아코디언형' },
     F: { desc: '모바일: 햄버거 · 아코디언형' },
   },
+  '02': { C: { desc: '모바일: 아이콘 · 패널형' } },
+  '03': { D: { desc: '모바일: 아이콘 · 아코디언형' } },
+  '04': { E: { desc: '모바일: 텍스트·아이콘 혼합 · 큰 글씨 패널형' } },
   '05': {
     A: { desc: '모바일: 메뉴 버튼 · 패널형' },
     B: { desc: '모바일: 아이콘 · 아코디언형' },
     F: { desc: '모바일: 햄버거 · 아코디언형' },
     I: { desc: '모바일: 햄버거 · 드로어형' },
   },
+  '07': { K: { desc: '모바일: 아이콘 · 아코디언형 (구분선)' } },
+  '08': { L: { desc: '모바일: 햄버거 · 떠 있는 패널형' } },
+  '09': { M: { desc: '모바일: 아이콘 · 떠 있는 큰 글씨 패널형' } },
+  '10': { N: { desc: '모바일: 칩 · 아코디언형' } },
+  '11': {
+    G: { desc: '모바일: 햄버거 · 아코디언형' },
+    I: { desc: '모바일: 햄버거 · 드로어형' },
+  },
+  '12': {
+    O: { desc: '모바일: 햄버거 · 드로어 아코디언형' },
+    P: { desc: '모바일: 햄버거 · 아코디언형' },
+  },
+  '13': {
+    Q: { desc: '모바일: 햄버거 · 드로어 큰 글씨형' },
+    R: { desc: '모바일: 햄버거 · 큰 글씨 패널형' },
+  },
+  '14': { S: { desc: '모바일: 햄버거 · 큰 글씨 패널형' } },
 };
+// a mobile pairing drawn with another's markup: Set 11's G is laid out like F; O · Q are drawers like I,
+// P · R · S full panels like F (data-mset keeps the real letter for what differs)
+const PAIR_LOOK = { G: 'F', O: 'I', P: 'F', Q: 'I', R: 'F', S: 'F' };
+const DRAWER_DESKS = ['11', '12', '13'];
 // where each item applies, per pairing ('01A', '05I', …): 'both' PC·모바일 · 'pc' · 'm' 모바일 · missing: not shown
-const on = (s01 = {}, s05 = {}) => Object.fromEntries([
-  ...Object.entries(s01).map(([k, v]) => ['01' + k, v]), ...Object.entries(s05).map(([k, v]) => ['05' + k, v])]);
+// Set 08 + L and Set 09 + M have one pairing each: on(s01, s05, '08L' value, '09M' value, Set 11 { G, I })
+const on = (s01 = {}, s05 = {}, l, m, s11 = {}) => Object.fromEntries([
+  ...Object.entries(s01).map(([k, v]) => ['01' + k, v]), ...Object.entries(s05).map(([k, v]) => ['05' + k, v]),
+  ...(l ? [['08L', l]] : []), ...(m ? [['09M', m]] : []), ...Object.entries(s11).map(([k, v]) => ['11' + k, v])]);
+const BOTH11 = { G: 'both', I: 'both' }, PC11 = { G: 'pc', I: 'pc' };
 const BOTH01 = { A: 'both', B: 'both', F: 'both' }, BOTH05 = { A: 'both', B: 'both', F: 'both', I: 'both' };
-const ALL = on(BOTH01, BOTH05);
+const ALL = on(BOTH01, BOTH05, 'both', 'both', BOTH11);
+// Set 05 / 06 · 08 · 09 share one layout family: menu left, logo centred, panels under the header
+// Set 11 · 12 · 13: drawers instead of panels · Set 14: its own full-screen menu
+const deskFamily = d => ['01', '02', '03', '04', '07', '10', '14'].includes(d) ? d : DRAWER_DESKS.includes(d) ? '11' : '05';
+const ITEM_OPTS_BY = {};
 const ITEMS = [
   // labelBy: a mobile-specific name — A's mobile header is text only (Menu · Bag), B · F · I use icons
   { group: '헤더 겹침', cls: 'is-media', desc: '헤더가 미디어 위에 겹쳐 있을 때 쓰는 컬러예요.' },
   // tone: the hero tone the colour is used on; the preview switches to a page with that hero
   { sub: '어두운 미디어 위' },
-  { key: 'mediaDarkBackground', token: 'header-on-media/dark/background', label: '배경색', on: on({}, BOTH05), view: 'default', opts: { tone: 'dark' } },
-  { key: 'mediaDarkNav', token: 'header-on-media/dark/nav', label: '상단 메뉴·아이콘', labelBy: { A: '상단 메뉴' }, on: on({}, BOTH05), view: 'default', opts: { tone: 'dark' } },
+  { key: 's10MediaBg', token: 'header-on-media/dark/nav-background', cssVar: '--s10md-bg', label: '메뉴·아이콘·검색 칩 배경', on: { '10N': 'both' }, opts: { tone: 'dark' }, view: 'default', screens: ['default', 'menu', 'search'] },
+  { key: 's10MediaNav', token: 'header-on-media/dark/nav', cssVar: '--s10md-nav', label: '메뉴·아이콘 텍스트', on: { '10N': 'both' }, opts: { tone: 'dark' }, view: 'default', screens: ['default', 'menu', 'search'] },
+  { key: 's10MediaBgActive', token: 'header-on-media/dark/nav-background-active', cssVar: '--s10md-bga', label: '선택된 칩 배경 · 전체보기 버튼', on: { '10N': 'both' }, opts: { tone: 'dark' }, view: 'menu', screens: ['menu', 'search'] },
+  { key: 's10MediaActive', token: 'header-on-media/dark/nav-active', cssVar: '--s10md-act', label: '선택 칩 텍스트', on: { '10N': 'both' }, opts: { tone: 'dark' }, view: 'menu', screens: ['menu', 'search'] },
+  { key: 'mediaDarkBackground', token: 'header-on-media/dark/background', label: '배경색', on: on({}, BOTH05, 'both', 'both', BOTH11), view: 'default', opts: { tone: 'dark' } },
+  { key: 'mediaDarkNavBg', token: 'header-on-media/dark/nav-background', label: '메뉴·아이콘 배경', on: {}, view: 'default', opts: { tone: 'dark' }, screens: ['default', 'menu', 'search'] },
+  { key: 'mediaDarkNav', token: 'header-on-media/dark/nav', label: '상단 메뉴·아이콘', labelBy: { A: '상단 메뉴' }, on: on({}, BOTH05, 'both', 'both', BOTH11), view: 'default', opts: { tone: 'dark' } },
+  { key: 'mediaDarkBadgeBackground', token: 'header-on-media/dark/badge-cart-background', label: '장바구니 뱃지 배경', on: on({}, { B: 'm', F: 'm', I: 'm' }, 'm', 'both', BOTH11), view: 'default', opts: { tone: 'dark' } },
+  { key: 'mediaDarkBadgeLabel', token: 'header-on-media/dark/badge-cart-label', label: '장바구니 뱃지 숫자', on: on({}, { B: 'm', F: 'm', I: 'm' }, 'm', 'both', BOTH11), view: 'default', opts: { tone: 'dark' } },
+  { key: 'mediaDarkNavBgActive', token: 'header-on-media/dark/nav-background-active', label: '선택 상태 배경', on: {}, view: 'menu', opts: { tone: 'dark' }, screens: ['menu', 'search'] },
+  { key: 'mediaDarkNavActive', token: 'header-on-media/dark/nav-active', label: '선택 상태 텍스트', on: {}, view: 'menu', opts: { tone: 'dark' }, screens: ['menu', 'search'] },
+  { key: 'mediaDarkMenuNav', token: 'header-menu-on-media/dark/nav', label: '펼친 메뉴 텍스트', on: {}, view: 'menu', opts: { tone: 'dark' } },
+  { key: 'mediaDarkMenuBack', token: 'header-menu-on-media/dark/back', label: '펼친 메뉴 뒤로가기', on: {}, view: 'menu', opts: { tone: 'dark', depth2: true } },
+  { key: 'mediaDarkMenuUtility', token: 'header-menu-on-media/dark/utility', label: '펼친 메뉴 유틸리티', on: {}, view: 'menu', opts: { tone: 'dark' } },
   { sub: '밝은 미디어 위' },
-  { key: 'mediaLightBackground', token: 'header-on-media/light/background', label: '배경색', on: on({}, BOTH05), view: 'default', opts: { tone: 'light' } },
-  { key: 'mediaLightNav', token: 'header-on-media/light/nav', label: '상단 메뉴·아이콘', labelBy: { A: '상단 메뉴' }, on: on({}, BOTH05), view: 'default', opts: { tone: 'light' } },
+  { key: 's10MediaLightBg', token: 'header-on-media/light/nav-background', cssVar: '--s10ml-bg', label: '메뉴·아이콘·검색 칩 배경', on: { '10N': 'both' }, opts: { tone: 'light' }, view: 'default', screens: ['default', 'menu', 'search'] },
+  { key: 's10MediaLightNav', token: 'header-on-media/light/nav', cssVar: '--s10ml-nav', label: '메뉴·아이콘 텍스트', on: { '10N': 'both' }, opts: { tone: 'light' }, view: 'default', screens: ['default', 'menu', 'search'] },
+  { key: 's10MediaLightBgActive', token: 'header-on-media/light/nav-background-active', cssVar: '--s10ml-bga', label: '선택된 칩 배경 · 전체보기 버튼', on: { '10N': 'both' }, opts: { tone: 'light' }, view: 'menu', screens: ['menu', 'search'] },
+  { key: 's10MediaLightActive', token: 'header-on-media/light/nav-active', cssVar: '--s10ml-act', label: '선택 칩 텍스트', on: { '10N': 'both' }, opts: { tone: 'light' }, view: 'menu', screens: ['menu', 'search'] },
+  { key: 'mediaLightBackground', token: 'header-on-media/light/background', label: '배경색', on: on({}, BOTH05, 'both', 'both', BOTH11), view: 'default', opts: { tone: 'light' } },
+  { key: 'mediaLightNavBg', token: 'header-on-media/light/nav-background', label: '메뉴·아이콘 배경', on: {}, view: 'default', opts: { tone: 'light' }, screens: ['default', 'menu', 'search'] },
+  { key: 'mediaLightNav', token: 'header-on-media/light/nav', label: '상단 메뉴·아이콘', labelBy: { A: '상단 메뉴' }, on: on({}, BOTH05, 'both', 'both', BOTH11), view: 'default', opts: { tone: 'light' } },
+  { key: 'mediaLightBadgeBackground', token: 'header-on-media/light/badge-cart-background', label: '장바구니 뱃지 배경', on: on({}, { B: 'm', F: 'm', I: 'm' }, 'm', 'both', BOTH11), view: 'default', opts: { tone: 'light' } },
+  { key: 'mediaLightBadgeLabel', token: 'header-on-media/light/badge-cart-label', label: '장바구니 뱃지 숫자', on: on({}, { B: 'm', F: 'm', I: 'm' }, 'm', 'both', BOTH11), view: 'default', opts: { tone: 'light' } },
+  { key: 'mediaLightNavBgActive', token: 'header-on-media/light/nav-background-active', label: '선택 상태 배경', on: {}, view: 'menu', opts: { tone: 'light' }, screens: ['menu', 'search'] },
+  { key: 'mediaLightNavActive', token: 'header-on-media/light/nav-active', label: '선택 상태 텍스트', on: {}, view: 'menu', opts: { tone: 'light' }, screens: ['menu', 'search'] },
+  { key: 'mediaLightMenuNav', token: 'header-menu-on-media/light/nav', label: '펼친 메뉴 텍스트', on: {}, view: 'menu', opts: { tone: 'light' } },
+  { key: 'mediaLightMenuBack', token: 'header-menu-on-media/light/back', label: '펼친 메뉴 뒤로가기', on: {}, view: 'menu', opts: { tone: 'light', depth2: true } },
+  { key: 'mediaLightMenuUtility', token: 'header-menu-on-media/light/utility', label: '펼친 메뉴 유틸리티', on: {}, view: 'menu', opts: { tone: 'light' } },
   // desc may depend on the screen picked (C2) or the desktop header: the same token shows on several screens
   { group: '헤더', desc: () => state.mode === 'screens' && state.screen !== 'default'
       ? '기본 화면과 같은 컬러예요. 여기서 바꾸면 모든 화면에 함께 적용돼요.'
       : '헤더 바에 쓰는 컬러예요. 배경색은 펼친 메뉴와 검색 화면에도 함께 적용돼요.' },
   { key: 'background', token: 'header/background', label: '배경색', on: ALL, view: 'default', opts: { solid: true }, screens: ['default', 'menu', 'search'] },
+  { key: 'navBg', token: 'header/nav-background', label: '메뉴·아이콘 배경', on: {}, view: 'default', opts: { solid: true }, screens: ['default', 'menu', 'search'] },
   { key: 'nav', token: 'header/nav', label: '상단 메뉴·아이콘', labelBy: { A: '상단 메뉴' }, on: ALL, view: 'default', opts: { solid: true }, screens: ['default', 'menu', 'search'] },
+  { key: 'badgeBackground', token: 'header/badge-cart-background', label: '장바구니 뱃지 배경', on: on({ B: 'm', F: 'm' }, { B: 'm', F: 'm', I: 'm' }, 'm', 'both', BOTH11), view: 'default', opts: { solid: true } },
+  { key: 'badgeLabel', token: 'header/badge-cart-label', label: '장바구니 뱃지 숫자', on: on({ B: 'm', F: 'm' }, { B: 'm', F: 'm', I: 'm' }, 'm', 'both', BOTH11), view: 'default', opts: { solid: true } },
+  { key: 'navBgActive', token: 'header/nav-background-active', label: '선택 상태 배경', on: {}, view: 'menu', opts: { solid: true }, screens: ['menu', 'search'] },
+  { key: 'navActive', token: 'header/nav-active', label: '선택 상태 텍스트', on: {}, view: 'menu', opts: { solid: true }, screens: ['menu', 'search'] },
+  { key: 's10Bg', token: 'header/nav-background', cssVar: '--s10-bg', label: '메뉴·아이콘·검색 칩 배경', on: { '10N': 'both' }, view: 'default', opts: { solid: true }, screens: ['default', 'menu', 'search'] },
+  { key: 's10Nav', token: 'header/nav', cssVar: '--s10-nav', label: '메뉴·아이콘 텍스트', on: { '10N': 'both' }, view: 'default', opts: { solid: true }, screens: ['default', 'menu', 'search'] },
+  { key: 's10BgActive', token: 'header/nav-background-active', cssVar: '--s10-bga', label: '선택된 칩 배경 · 전체보기 버튼', on: { '10N': 'both' }, view: 'menu', opts: { solid: true }, screens: ['menu', 'search'] },
+  { key: 's10Active', token: 'header/nav-active', cssVar: '--s10-act', label: '선택 칩 텍스트', on: { '10N': 'both' }, view: 'menu', opts: { solid: true }, screens: ['menu', 'search'] },
+  { key: 'border', token: 'header/border', label: '구분선', on: {}, view: 'default', opts: { solid: true }, screens: ['default', 'menu', 'search'] },
   { group: '펼친 메뉴', desc: '메뉴를 펼쳤을 때 쓰는 컬러예요.' },
   { key: 'menuNav', token: 'header-menu/nav', label: '메뉴 텍스트', on: ALL, view: 'menu' },
-  { key: 'menuNavHover', token: 'header-menu/nav-hover', label: '메뉴 텍스트 - 호버', on: on({ A: 'pc', B: 'pc', F: 'pc' }, { A: 'pc', B: 'pc', F: 'pc', I: 'pc' }), view: 'menu', opts: { hover: true } },
-  { key: 'menuExpand', token: 'header-menu/expand-icon', label: '펼치기 아이콘 (+ / −)', on: on({ B: 'm', F: 'm' }, { B: 'm', F: 'm', I: 'm' }), view: 'menu', opts: { expand: true } },
-  { key: 'menuBack', token: 'header-menu/back', label: '뒤로가기 버튼', on: on({ A: 'm' }, { A: 'm' }), view: 'menu', opts: { depth2: true } },
-  { key: 'menuUtility', token: 'header-menu/utility', label: '유틸리티 (로그인·마이페이지)', on: on({ A: 'm', B: 'm', F: 'm' }, { A: 'm', B: 'm', F: 'm', I: 'm' }), view: 'menu' },
+  { key: 'menuNavHover', token: 'header-menu/nav-hover', label: '메뉴 텍스트 - 호버', on: on({}), view: 'menu', opts: { hover: true } },
+  { key: 'menuNavBgHover', token: 'header-menu/nav-background-hover', label: '메뉴 텍스트 - 호버 배경', on: {}, view: 'menu', opts: { hover: true } },
+  { key: 'menuBorder', token: 'header-menu/nav-border', label: '메뉴 구분선', on: {}, view: 'menu' },
+  { key: 'menuExpand', token: 'header-menu/expand-icon', label: '펼치기 아이콘 (+ / −)', on: on({ B: 'm', F: 'm' }, { B: 'm', F: 'm', I: 'm' }, null, null, { G: 'pc', I: 'both' }), view: 'menu', opts: { expand: true } },
+  { key: 'menuBack', token: 'header-menu/back', label: '뒤로가기 버튼', on: on({ A: 'm' }, { A: 'm' }, 'm'), view: 'menu', opts: { depth2: true } },
+  { key: 'menuUtility', token: 'header-menu/utility', label: '유틸리티 (로그인·마이페이지)', on: on({ A: 'm', B: 'm', F: 'm' }, { A: 'm', B: 'm', F: 'm', I: 'm' }, 'm', 'm', BOTH11), view: 'menu' },
   { group: '검색', desc: '검색창 및 검색 결과에 쓰는 컬러예요.' },
   { sub: '검색창' },
-  { key: 'borderInactive', token: 'header-search/border-inactive', label: '하단 선', on: ALL, view: 'search', opts: { empty: true } },
-  { key: 'borderActive', token: 'header-search/border-active', label: '하단 선 - 입력 중', on: ALL, view: 'search' },
-  { key: 'placeholder', token: 'header-search/placeholder-text', label: '입력 전 텍스트', on: ALL, view: 'search', opts: { empty: true } },
+  { key: 'searchFieldBg', token: 'header-search/field-background', label: '검색창 배경', on: {}, view: 'search', opts: { empty: true } },
+  { key: 'borderInactive', token: 'header-search/border-inactive', label: '하단 선', on: on({ A: 'm' }, BOTH05, 'both', null, BOTH11), view: 'search', opts: { empty: true } },
+  { key: 'borderActive', token: 'header-search/border-active', label: '하단 선 - 입력 중', on: {}, view: 'search' },
+  { key: 'placeholder', token: 'header-search/placeholder-text', label: '입력 전 텍스트', on: on({}), view: 'search', opts: { empty: true } },
   { key: 'input', token: 'header-search/input-text', label: '입력한 검색어', on: ALL, view: 'search' },
-  { key: 'cursor', token: 'header-search/cursor', label: '커서', on: ALL, view: 'search' },
-  { key: 'searchIcon', token: 'header-search/icon', label: '검색 아이콘', on: ALL, view: 'search', opts: { empty: true } },
+  { key: 'cursor', token: 'header-search/cursor', label: '커서', on: on({}), view: 'search' },
+  { key: 'searchIcon', token: 'header-search/icon', label: '검색 아이콘', on: on(BOTH01, BOTH05, null, 'both', BOTH11), view: 'search', opts: { empty: true } },
   { sub: '검색 결과' },
-  { key: 'resultLabel', token: 'header-search/result-label', label: '"검색 결과" 라벨', on: on({ A: 'pc', B: 'both', F: 'both' }, { A: 'pc', B: 'both', F: 'both', I: 'both' }), view: 'search' },
-  { key: 'result', token: 'header-search/result', label: '검색 결과 텍스트', on: on({ B: 'm', F: 'm' }, { A: 'pc', B: 'both', F: 'both', I: 'both' }), view: 'search' },
-  { key: 'resultHover', token: 'header-search/result-hover', label: '검색 결과 텍스트 - 호버', on: on({}, { A: 'pc', B: 'pc', F: 'pc', I: 'pc' }), view: 'search', opts: { hover: true } },
-  { key: 'resultLink', token: 'header-search/result-link', label: '전체보기 버튼', on: on({ A: 'pc', B: 'pc', F: 'pc' }), view: 'search' },
-  { key: 'productName', token: 'header-search/product-name', label: '상품명', on: on({ A: 'pc', B: 'pc', F: 'pc' }), view: 'search' },
-  { key: 'productPrice', token: 'header-search/product-price', label: '판매가', on: on({ A: 'pc', B: 'pc', F: 'pc' }), view: 'search' },
-  { key: 'productPriceOriginal', token: 'header-search/product-price-original', label: '원가', on: on({ A: 'pc', B: 'pc', F: 'pc' }), view: 'search' },
-  { group: 'backdrop', desc: () => state.desk === '05' ? '메뉴나 검색을 펼쳤을 때 뒤쪽 화면을 덮는 컬러예요.' : '메뉴를 펼쳤을 때 뒤쪽 화면을 덮는 컬러예요.' },
-  { key: 'backdrop', token: 'header-backdrop/default', label: '오버레이', on: on({ A: 'pc', B: 'pc', F: 'pc' }, { A: 'pc', B: 'pc', F: 'pc', I: 'both' }), view: 'menu', screensBy: { '05': ['menu', 'search'] } },
+  { key: 'resultLabel', token: 'header-search/result-label', label: '"검색 결과" 라벨', on: on({}), view: 'search' },
+  { key: 'result', token: 'header-search/result', label: '검색 결과 텍스트', on: on({ B: 'm', F: 'm' }, { A: 'pc', B: 'both', F: 'both', I: 'both' }, 'both', 'both', { G: 'm', I: 'm' }), view: 'search' },
+  { key: 'resultLink', token: 'header-search/result-link', label: '전체보기 버튼', on: on({ A: 'pc', B: 'pc', F: 'pc' }, {}, null, null, PC11), view: 'search' },
+  { key: 'productName', token: 'header-search/product-name', label: '상품명', on: on({ A: 'pc', B: 'pc', F: 'pc' }, {}, null, null, PC11), view: 'search' },
+  { key: 'productPrice', token: 'header-search/product-price', label: '판매가', on: on({ A: 'pc', B: 'pc', F: 'pc' }, {}, null, null, PC11), view: 'search' },
+  { key: 'productPriceOriginal', token: 'header-search/product-price-original', label: '원가', on: on({ A: 'pc', B: 'pc', F: 'pc' }, {}, null, null, PC11), view: 'search' },
+  { group: 'backdrop', desc: () => state.desk !== '01' ? '메뉴나 검색을 펼쳤을 때 뒤쪽 화면을 덮는 컬러예요.' : '메뉴를 펼쳤을 때 뒤쪽 화면을 덮는 컬러예요.' },
+  { key: 'backdrop', token: 'header-backdrop/default', label: '오버레이', on: on({ A: 'pc', B: 'pc', F: 'pc' }, { A: 'pc', B: 'pc', F: 'pc', I: 'both' }, 'both', 'both', { G: 'pc', I: 'both' }), view: 'menu', screensBy: { '05': ['menu', 'search'], '08': ['menu', 'search'], '09': ['menu', 'search'], '11': ['menu', 'search'], '12': ['menu', 'search'], '13': ['menu', 'search'] } },
 ];
+// Set 12 (O · P) · 13 (Q · R) · 14 (S): Figma "유저 컬러 편집 항목 · Set 12 / 13 / 14 페어링별"
+{
+  const B12 = { '12O': 'both', '12P': 'both' }, B13 = { '13Q': 'both', '13R': 'both' }, B14 = { '14S': 'both' }, M14 = { '14S': 'm' };
+  const ALL3 = { ...B12, ...B13, ...B14 }, BADGE = { ...B12, ...B13, ...M14 }, PRODUCT = { ...B12, ...B14 };
+  const MORE = {
+    mediaDarkBackground: ALL3, mediaDarkNav: ALL3, mediaLightBackground: ALL3, mediaLightNav: ALL3,
+    mediaDarkBadgeBackground: BADGE, mediaDarkBadgeLabel: BADGE, mediaLightBadgeBackground: BADGE, mediaLightBadgeLabel: BADGE,
+    background: ALL3, nav: ALL3, badgeBackground: BADGE, badgeLabel: BADGE,
+    menuNav: ALL3, menuBorder: B12, menuExpand: B12, menuBack: { "13Q": "m", "13R": "m", ...M14 }, menuUtility: BADGE,
+    borderInactive: ALL3, input: ALL3, searchIcon: ALL3, result: B13,
+    resultLink: PRODUCT, productName: PRODUCT, productPrice: PRODUCT, productPriceOriginal: PRODUCT,
+    backdrop: { '12O': 'both', '12P': 'pc', '13Q': 'both', '13R': 'pc' },
+  };
+  for (const item of ITEMS) if (MORE[item.key]) item.on = { ...item.on, ...MORE[item.key] };
+}
+// Set 02 + C: Figma "유저 컬러 편집 항목 · Set 02 페어링"
+{
+  const B = { '02C': 'both' };
+  const S02 = { background: B, nav: B, badgeBackground: B, badgeLabel: B, menuNav: B, menuUtility: { '02C': 'm' },
+    searchFieldBg: B, input: B, searchIcon: B };
+  for (const item of ITEMS) if (S02[item.key]) item.on = { ...item.on, ...S02[item.key] };
+  ITEM_OPTS_BY.menuNav = { ...ITEM_OPTS_BY.menuNav, '02': { hover: true } }; // hover = the panel tinted toward 메뉴 텍스트 (hoverTint)
+}
+// Set 03 + D: Figma "유저 컬러 편집 항목 · Set 03 페어링" (하단선 · hover 흐림 · 결과 hover follow the colour of their row)
+{
+  const B = { '03D': 'both' }, M = { '03D': 'm' };
+  const S03 = { background: B, nav: B, badgeBackground: B, badgeLabel: B, menuNav: B, menuExpand: M, menuUtility: M,
+    input: B, result: B, backdrop: { '03D': 'pc' } };
+  for (const item of ITEMS) if (S03[item.key]) item.on = { ...item.on, ...S03[item.key] };
+  ITEM_OPTS_BY.menuNav = { ...ITEM_OPTS_BY.menuNav, '03': { hover: true } }; // editing the menu colour shows the faded others
+  const bd = ITEMS.find(i => i.key === 'backdrop');
+  bd.screensBy['03'] = ['search']; bd.viewBy = { '03': 'search' }; // only the search dims the page
+}
+// Set 07 + K: Figma "유저 컬러 편집 항목 · Set 07 페어링". 하단선 follows 상단 메뉴, hover the menu / result colour faded;
+// like Set 02 · 03, the cursor, 입력 전 텍스트 and "검색 결과" label follow 입력한 검색어 / 검색 결과 텍스트
+{
+  const B = { '07K': 'both' }, M = { '07K': 'm' };
+  const S07 = { background: B, nav: B, badgeBackground: M, badgeLabel: M, menuNav: B, menuExpand: M, border: B, menuUtility: M,
+    borderInactive: B, input: B, // 하단 선 - 입력 중 follows 하단 선 (tokenVars)
+    searchIcon: B, result: B, backdrop: { '07K': 'pc' } };
+  for (const item of ITEMS) if (S07[item.key]) item.on = { ...item.on, ...S07[item.key] };
+  ITEM_OPTS_BY.menuNav = { ...ITEM_OPTS_BY.menuNav, '07': { hover: true } };
+  ITEMS.find(i => i.key === 'backdrop').screensBy['07'] = ['menu', 'search'];
+}
+// Set 04 + E: Figma "tokens by screen" (헤더 겹침 colours split by tone like the rest of the editor)
+{
+  const B = { '04E': 'both' }, M = { '04E': 'm' };
+  const S04 = { mediaDarkNav: B, mediaLightNav: B, nav: B, menuNav: B, menuBack: M, menuUtility: M, backdrop: { '04E': 'pc' },
+    navBg: B, navBgActive: B, navActive: B };
+  for (const T of ['Dark', 'Light']) Object.assign(S04, { [`media${T}NavBg`]: B, [`media${T}NavBgActive`]: B, [`media${T}NavActive`]: B,
+    [`media${T}MenuNav`]: B, [`media${T}MenuBack`]: M, [`media${T}MenuUtility`]: M });
+  for (const item of ITEMS) if (S04[item.key]) item.on = { ...item.on, ...S04[item.key] };
+  // Set 04's menu and search keep the 미디어 위 look, so editing a plain menu colour shows the solid header
+  for (const k of ['menuNav', 'menuBack', 'menuUtility']) ITEM_OPTS_BY[k] = { ...ITEM_OPTS_BY[k], '04': { solid: true } };
+  ITEMS.find(i => i.key === 'backdrop').screensBy['04'] = ['menu', 'search'];
+}
+// Set 10 + N: the page dims behind its search (PC) and behind the menu and search (모바일)
+{
+  const bd = ITEMS.find(i => i.key === 'backdrop');
+  bd.on = { ...bd.on, '10N': 'both' };
+  bd.screensBy['10'] = ['menu', 'search'];
+}
 // 화면별 보기: an item is listed on its own screen, plus wherever else Figma marks it (screens)
-const onScreen = (item, screen) => ((item.screensBy && item.screensBy[state.desk]) || item.screens || [item.view]).includes(screen);
+const itemView = item => (item.viewBy && item.viewBy[state.desk]) || item.view;
+const onScreen = (item, screen) => ((item.screensBy && item.screensBy[state.desk]) || item.screens || [itemView(item)]).includes(screen);
 const groupDesc = g => typeof g.desc === 'function' ? g.desc() : g.desc;
+const itemOpts = item => ({ ...(item.opts || {}), ...((ITEM_OPTS_BY[item.key] || {})[state.desk] || {}) });
 const ITEM = Object.fromEntries(ITEMS.filter(i => i.key).map(i => [i.key, i]));
 const DEV_LABEL = { pc: 'PC', m: '모바일' };
 // items whose picker also offers a blur: [on, amount] fields in state.colors, and the picker's wording
@@ -1075,19 +2075,45 @@ const overlaps = () => canOverlap() && state.overlap[state.page];
 
 // starting colours: the Base scheme of the earlier editors
 const DEFAULT_COLORS = {
+  // Set 10 (Figma 7328:62302): light chips over the hero, dark chips once scrolled / on sub pages
+  s10MediaBg: '#f9f9f9', s10MediaNav: '#000000', s10MediaBgActive: '#2a2a2a', s10MediaActive: '#ffffff',
+  s10MediaLightBg: '#111111', s10MediaLightNav: '#ffffff', s10MediaLightBgActive: '#ffffff', s10MediaLightActive: '#111111', // like the sub pages
+  s10Bg: '#111111', s10Nav: '#ffffff', s10BgActive: '#ffffff', s10Active: '#111111',
   mediaDarkBackground: '#ffffff00', mediaDarkNav: '#ffffff', mediaLightBackground: '#ffffff00', mediaLightNav: '#1a1a1a',
-  background: '#ffffff', nav: '#1a1a1a',
-  menuNav: '#1a1a1a', menuNavHover: '#97938d', menuUtility: '#5e5b57', menuBack: '#5e5b57', menuExpand: '#1a1a1a',
+  mediaDarkBadgeBackground: '#ffffff', mediaDarkBadgeLabel: '#1a1a1a', mediaLightBadgeBackground: '#1a1a1a', mediaLightBadgeLabel: '#ffffff',
+  background: '#ffffff', nav: '#1a1a1a', border: '#e4e1dc', badgeBackground: '#1a1a1a', badgeLabel: '#ffffff',
+  navBg: '#f0f0f099', navBgActive: '#ffffff', navActive: '#1a1a1a',
+  mediaDarkNavBg: '#1d1d1b80', mediaDarkNavBgActive: '#ffffff', mediaDarkNavActive: '#1a1a1a',
+  mediaDarkMenuNav: '#ffffff', mediaDarkMenuBack: '#bdbdbd', mediaDarkMenuUtility: '#ffffff',
+  mediaLightNavBg: '#f0f0f099', mediaLightNavBgActive: '#ffffff', mediaLightNavActive: '#1a1a1a',
+  mediaLightMenuNav: '#1a1a1a', mediaLightMenuBack: '#5e5b57', mediaLightMenuUtility: '#5e5b57',
+  menuNav: '#1a1a1a', menuNavHover: '#97938d', menuNavBgHover: '#f5f5f5', searchFieldBg: '#f5f5f5', menuBorder: '#e4e1dc', menuUtility: '#5e5b57', menuBack: '#5e5b57', menuExpand: '#1a1a1a',
   borderInactive: '#e4e1dc', borderActive: '#97938d', placeholder: '#97938d', input: '#1a1a1a', cursor: '#1a1a1a',
-  searchIcon: '#1a1a1a', resultLabel: '#5e5b57', result: '#1a1a1a', resultHover: '#97938d', resultLink: '#1a1a1a',
+  searchIcon: '#1a1a1a', resultLabel: '#5e5b57', result: '#1a1a1a', resultLink: '#1a1a1a',
   productName: '#1a1a1a', productPrice: '#1a1a1a', productPriceOriginal: '#97938d',
   backdrop: '#0f0e0d59',
   blurOn: false, blur: 8,                 // 배경색 blur
   backdropBlurOn: false, backdropBlur: 8, // 오버레이 blur
 };
+// Set 08 · 09: the 미디어 위 colours start the same as the header's own (white card, dark menu · icons)
+const FLOAT_MEDIA = {
+  mediaDarkBackground: '#ffffff', mediaDarkNav: '#1a1a1a', mediaDarkBadgeBackground: '#1a1a1a', mediaDarkBadgeLabel: '#ffffff',
+  mediaLightBackground: '#ffffff', mediaLightNav: '#1a1a1a', mediaLightBadgeBackground: '#1a1a1a', mediaLightBadgeLabel: '#ffffff',
+};
+const mediaDefaults = d => d === '08' || d === '09' ? FLOAT_MEDIA : DEFAULT_COLORS;
+// switching header design: a 미디어 위 colour still at the old design's starting value moves to the new one's
+// Set 04: the page behind its menu and search is lightly dimmed and blurred
+const DESK_DEFAULTS = { '04': { backdrop: '#11111133', backdropBlurOn: true, backdropBlur: 15 }, '07': { border: '#1a1a1a' }, '09': { backdrop: '#11111133', backdropBlurOn: true, backdropBlur: 15 }, '10': { backdrop: '#26262680', backdropBlurOn: true, backdropBlur: 10 } };
+const deskDefault = (d, k) => k in (DESK_DEFAULTS[d] || {}) ? DESK_DEFAULTS[d][k]
+  : k in mediaDefaults(d) ? mediaDefaults(d)[k] : DEFAULT_COLORS[k]; // FLOAT_MEDIA only holds the 헤더 겹침 colours
+function swapMediaDefaults(from, to) {
+  const keys = new Set([...Object.keys(FLOAT_MEDIA), ...Object.values(DESK_DEFAULTS).flatMap(Object.keys)]);
+  for (const k of keys)
+    if (state.colors[k] === deskDefault(from, k)) state.colors[k] = deskDefault(to, k);
+}
 
 const state = {
-  desk: '01',                       // desktop header: '01' | '05' (Set 05 / 06)
+  desk: '01',                       // desktop header: '01' | '05' (Set 05 / 06) | '08' | '09'
   set: 'A',                         // its mobile pairing
   colors: { ...DEFAULT_COLORS },
   logo: 'dark',                     // 로고 컬러: 'light' | 'dark'
@@ -1095,22 +2121,50 @@ const state = {
   mode: 'screens',                  // prototype: 'screens' C2 화면별 보기 (default) · 'auto' C1 자동 보기
   screen: 'default',                // C2: the screen picked in the preview
   page: 'home-dark',
+  mediaSide: 'dark', // C1 › 헤더 겹침 toggle: which 미디어 위 colours are listed
   overlap: { 'home-dark': true, 'home-light': true, 'sub': false }, // 헤더 표시, per page
   tone: { 'home-dark': 'auto', 'home-light': 'auto', 'sub': 'auto' }, // 헤더 표시 › 일반 컬러: auto · dark · light
   logoOv: { 'home-dark': 'auto', 'home-light': 'auto', 'sub': 'auto' }, // 헤더 표시 › 로고 컬러: auto · light · dark
 };
 // 로고 컬러 while overlapped: 자동 is 밝은 on a dark hero, 어두운 on a light one
-const mediaLogo = () => state.logoOv[state.page] !== 'auto' ? state.logoOv[state.page] : mediaTone() === 'dark' ? 'light' : 'dark';
+// Set 08 · 09 sit on a white card, so 자동 keeps the logo black
+const mediaLogo = () => state.logoOv[state.page] !== 'auto' ? state.logoOv[state.page]
+  : state.desk === '08' || state.desk === '09' ? 'dark' : mediaTone() === 'dark' ? 'light' : 'dark';
 // which 미디어 위 colours the page uses: 자동 follows the hero tone
 const mediaTone = () => state.tone[state.page] !== 'auto' ? state.tone[state.page] : (PAGES[state.page].hero || {}).tone || 'dark';
 
 function tokenVars() {
   const c = state.colors;
   const vars = { '--logo-color': state.logo === 'light' ? '#ffffff' : '#1a1a1a', '--header-blur': (c.blurOn ? c.blur : 0) + 'px', '--backdrop-blur': (c.backdropBlurOn ? c.backdropBlur : 0) + 'px' };
-  for (const item of Object.values(ITEM)) vars['--' + item.token.replace('/default', '').replace(/\//g, '-')] = c[item.key];
+  for (const item of Object.values(ITEM)) vars[item.cssVar || '--' + item.token.replace('/default', '').replace(/\//g, '-')] = c[item.key];
   const t = mediaTone() === 'light' ? 'Light' : 'Dark';
   vars['--header-on-media-background'] = c[`media${t}Background`];
   vars['--header-on-media-nav'] = c[`media${t}Nav`];
+  vars['--header-on-media-badge-cart-background'] = c[`media${t}BadgeBackground`];
+  vars['--header-on-media-badge-cart-label'] = c[`media${t}BadgeLabel`];
+  vars['--header-on-media-nav-background'] = c[`media${t}NavBg`];
+  vars['--header-on-media-nav-background-active'] = c[`media${t}NavBgActive`];
+  vars['--header-on-media-nav-active'] = c[`media${t}NavActive`];
+  vars['--header-menu-on-media-nav'] = c[`media${t}MenuNav`];
+  vars['--header-menu-on-media-back'] = c[`media${t}MenuBack`];
+  vars['--header-menu-on-media-utility'] = c[`media${t}MenuUtility`];
+  // Set 10's 미디어 위 chips: the dark-media set (light chips) or the light-media set (dark chips)
+  for (const k of ['bg', 'nav', 'bga', 'act']) vars[`--s10m-${k}`] = vars[`--s10m${t === 'Light' ? 'l' : 'd'}-${k}`];
+  // Set 05 / 06 · 08 · 09 don't edit these: they follow the colour next to them
+  if (state.desk !== '01') Object.assign(vars, {
+    '--header-search-border-active': c.borderInactive, '--header-menu-nav-hover': c.menuNav,
+    '--header-search-cursor': c.input,
+  });
+  // Set 03 · 05 · 07 · 08 · 09: 입력 전 텍스트 is 입력한 검색어, faded
+  if (['03', '05', '07', '08', '09'].includes(state.desk)) vars['--header-search-placeholder-text'] = `color-mix(in srgb, ${c.input} 50%, transparent)`;
+  // Set 01 doesn't edit these either: cursor = 입력한 검색어, 입력 전 텍스트 = 입력한 검색어 50%, 메뉴 호버 = 메뉴 텍스트 50%, "검색 결과" 라벨: see paint()
+  if (state.desk === '01') Object.assign(vars, {
+    '--header-search-cursor': c.input,
+    '--header-search-placeholder-text': `color-mix(in srgb, ${c.input} 50%, transparent)`,
+    '--header-menu-nav-hover': `color-mix(in srgb, ${c.menuNav} 50%, transparent)`,
+  });
+  if (state.desk === '02') vars['--s02-hover'] = hoverTint(c.background, c.menuNav);
+  if (state.desk === '07') vars['--header-menu-nav-hover'] = `color-mix(in srgb, ${c.menuNav} 62%, transparent)`;
   vars['--logo-media-color'] = mediaLogo() === 'light' ? '#ffffff' : '#1a1a1a';
   return vars;
 }
@@ -1158,8 +2212,15 @@ function basePane(node, width, height) {
   new ResizeObserver(() => {
     const scale = frame.clientWidth / width;
     viewport.style.height = (height || frame.clientHeight / scale) + 'px';
+    viewport.dataset.scale = scale;
     viewport.style.transform = `scale(${scale})`;
   }).observe(frame);
+  // Set 10's search panel starts under the first menu chip: keep its x (in unscaled px) on the header
+  const dnav = node.querySelector('.d-nav');
+  if (dnav) new ResizeObserver(() => {
+    const k = +viewport.dataset.scale || 1;
+    hdr.style.setProperty('--d-nav-left', (dnav.getBoundingClientRect().left - hdr.getBoundingClientRect().left) / k + 'px');
+  }).observe(dnav);
 
   const host = node.querySelector('[data-sf-host]');
   host.prepend(document.getElementById('sfTpl').content.firstElementChild.cloneNode(true));
@@ -1170,10 +2231,19 @@ function basePane(node, width, height) {
   return {
     frame, scroller, hdr, page, host, input,
     paint() {
-      frame.dataset.pair = state.set;
+      frame.dataset.pair = PAIR_LOOK[state.set] || state.set;
+      frame.dataset.mset = state.set;
       frame.dataset.desk = state.desk;
+      frame.dataset.layout = deskFamily(state.desk);
       frame.classList.toggle('is-overlap', overlaps());
       for (const [k, v] of Object.entries(tokenVars())) frame.style.setProperty(k, v);
+      // "검색 결과" 라벨 (not Set 04 · 10; Figma 7752:97811 방향 A): 검색 결과 텍스트 62% when the pairing has it on either side,
+      // else (01A · 12O · 12P · 14S, product cards only) 상품명 50%; a pairing with neither (02C) uses 입력한 검색어 50%
+      if (!['04', '10'].includes(state.desk)) {
+        const k = pairKey(), c = state.colors;
+        frame.style.setProperty('--header-search-result-label', ITEM.result.on[k] ? `color-mix(in srgb, ${c.result} 62%, transparent)`
+          : `color-mix(in srgb, ${ITEM.productName.on[k] ? c.productName : c.input} 50%, transparent)`);
+      }
     },
     // typing state: focus line, results, and a drawn cursor while a colour is being edited
     paintSearch(caret) {
@@ -1192,17 +2262,30 @@ function createDesktop() {
   const p = basePane(node, DESKTOP_W, DESKTOP_H);
   const { frame, scroller, hdr, page, input } = p;
   // solid: a header colour is being edited, so an overlapping header shows its hover / scroll look
-  const local = { open: false, search: false, forced: false, caret: false, scrolled: false, hover: false, solid: false };
+  // dwDepth: Set 13's drawer list (1 · 2) · sub: Set 14's 2depth column
+  const local = { open: false, search: false, forced: false, caret: false, scrolled: false, hover: false, solid: false, dwDepth: 1, sub: false };
   const shop = hdr.querySelector('[data-dd]');
+  const drawerDesk = () => DRAWER_DESKS.includes(state.desk);
+  // Set 11 – 14 open their menu with a click, so leaving the header or hovering an icon doesn't close it
+  const clickMenu = () => drawerDesk() || state.desk === '14';
 
   function render() {
     p.paint();
     hdr.classList.toggle('is-open', local.open && !local.search);
     shop.classList.toggle('is-open', local.open && !local.search);
     hdr.classList.toggle('is-search', local.search);
+    hdr.querySelector('.d-drawer').dataset.depth = local.dwDepth;
+    hdr.querySelector('.dw-big').dataset.depth = local.dwDepth;
+    hdr.querySelector('.d-mega').classList.toggle('is-sub', local.sub);
     // Set 05 / 06 also dims the page under its search panel
-    frame.classList.toggle('is-dimmed', (local.open && !local.search) || (local.search && state.desk === '05'));
-    hdr.classList.toggle('on-media', overlaps() && !local.scrolled && !local.hover && !local.solid && !local.open && !local.search);
+    frame.classList.toggle('is-dimmed', (local.open && !local.search && !['02', '03', '10'].includes(state.desk)) || (local.search && !['01', '02'].includes(state.desk)));
+    // Set 11 · 12 · 13's drawers open over the header, which stays as it was under the dim
+    const drawn = drawerDesk() || ['04', '10'].includes(state.desk) ? false : local.open || local.search;
+    // and they keep their 미디어 위 colours while hovered
+    const hovered = local.hover && !drawerDesk() && !['04', '10'].includes(state.desk);
+    // Set 04 · 10 keep their 미디어 위 colours after scrolling
+    const scrolled = local.scrolled && !['04', '10'].includes(state.desk);
+    hdr.classList.toggle('on-media', overlaps() && !scrolled && !hovered && !local.solid && !drawn);
     p.paintSearch(local.caret);
   }
   // any real interaction ends an auto-shown state; hovering doesn't while the colour picker is open
@@ -1215,8 +2298,21 @@ function createDesktop() {
   hdr.addEventListener('mouseenter', () => { local.hover = true; if (cp.el.hidden) clearForced(); render(); });
   shop.addEventListener('mouseenter', () => { if (!local.search && !local.forced) { local.open = true; render(); } });
   hdr.querySelectorAll('.d-nav > :not([data-dd]), .d-util .hdr-item').forEach(el =>
-    el.addEventListener('mouseenter', () => { if (!local.forced && local.open) { local.open = false; render(); } }));
-  hdr.addEventListener('mouseleave', () => { local.hover = false; if (!local.forced && local.open) local.open = false; render(); });
+    el.addEventListener('mouseenter', () => { if (!local.forced && local.open && !clickMenu()) { local.open = false; render(); } }));
+  hdr.addEventListener('mouseleave', () => { local.hover = false; if (!local.forced && local.open && !clickMenu()) local.open = false; render(); });
+  // Set 11 · 12 · 13: the hamburger opens a drawer; its X or the dim closes it, and the drawer's accordion toggles
+  const openMenu = open => { Object.assign(local, { open, search: false, dwDepth: 1, sub: false }); input.value = ''; render(); };
+  hdr.querySelector('[data-open]').addEventListener('click', () => openMenu(true));
+  hdr.querySelectorAll('[data-dclose]').forEach(b => b.addEventListener('click', () => { local.open = false; setSearch(false); }));
+  hdr.querySelectorAll('[data-dw-toggle]').forEach(b => b.addEventListener('click', () => b.closest('.acc').classList.toggle('is-open')));
+  // Set 13: Shop moves the drawer to its 2depth list, the back arrow returns
+  hdr.querySelector('[data-dwb-to2]').addEventListener('click', () => { local.dwDepth = 2; render(); });
+  hdr.querySelector('[data-dwb-to1]').addEventListener('click', () => { local.dwDepth = 1; render(); });
+  // Set 14: MENU ↔ CLOSE; hovering Shop shows its 2depth column, another 1depth item hides it
+  hdr.querySelector('[data-mtoggle]').addEventListener('click', () => { clearForced(); openMenu(!local.open); });
+  hdr.querySelectorAll('.mg-1 > a').forEach(a => a.addEventListener('mouseenter', () => {
+    const sub = a.hasAttribute('data-mg'); if (sub !== local.sub) { local.sub = sub; render(); }
+  }));
 
   function setSearch(open) {
     local.search = open; local.open = false; local.caret = false;
@@ -1225,7 +2321,7 @@ function createDesktop() {
     render();
   }
   // Set 01 swaps the menu for a Close button; Set 05 / 06 keeps it, so Search closes again
-  hdr.querySelector('[data-search]').addEventListener('click', () => setSearch(state.desk === '05' ? !local.search : true));
+  hdr.querySelectorAll('[data-search]').forEach(b => b.addEventListener('click', () => setSearch(state.desk !== '01' ? !local.search : true)));
   hdr.querySelector('[data-close]').addEventListener('click', () => setSearch(false));
   input.addEventListener('input', render);
   input.addEventListener('focus', render);
@@ -1240,12 +2336,12 @@ function createDesktop() {
     node, render,
     setPage() { page.innerHTML = pageHTML(state.page); scroller.scrollTop = 0; render(); },
     setView(view, opts = {}) {
-      Object.assign(local, { open: false, search: false, forced: view === 'menu' || view === 'search', caret: false, solid: !!opts.solid });
-      scroller.scrollTop = view === 'scroll' ? SCROLL_Y : 0;
+      Object.assign(local, { open: false, search: false, forced: view === 'menu' || view === 'search', caret: false, solid: !!opts.solid,
+        dwDepth: view === 'menu' && opts.depth2 ? 2 : 1, sub: false });
+      scroller.scrollTop = view === 'scroll' ? SCROLL_Y : peekY(view, opts);
       local.scrolled = scroller.scrollTop > 0;
       if (view === 'menu') local.open = true;
       shop.querySelector('.dd').classList.toggle('show-hover', view === 'menu' && !!opts.hover);
-      hdr.querySelector('.d-list').classList.toggle('show-hover', view === 'search' && !!opts.hover);
       if (view === 'search') { local.search = true; local.caret = !opts.empty; }
       input.value = view === 'search' && !opts.empty ? 'Product' : '';
       render();
@@ -1264,8 +2360,9 @@ function createMobile() {
     p.paint();
     hdr.classList.toggle('is-menu', local.menu);
     // I's drawer leaves the header bar as it was, under the dim
-    const covered = local.menu && (local.search || state.set !== 'I');
-    hdr.classList.toggle('on-media', overlaps() && !local.scrolled && !local.solid && !covered);
+    const covered = local.menu && !['E', 'N'].includes(state.set) && (local.search || state.set !== 'I');
+    const scrolled = local.scrolled && !['04', '10'].includes(state.desk); // Set 04 · 10 keep their 미디어 위 colours after scrolling
+    hdr.classList.toggle('on-media', overlaps() && !scrolled && !local.solid && !covered);
     hdr.classList.toggle('is-search', local.menu && local.search);
     panel.classList.toggle('is-search-mode', local.search && state.set !== 'A'); // A searches inside the menu panel
     panel.dataset.depth = local.depth;
@@ -1282,6 +2379,7 @@ function createMobile() {
   node.querySelectorAll('[data-msearch]').forEach(b => b.addEventListener('click', () => { setMenu(true, true); viewReleased(); }));
   panel.querySelector('[data-to2]').addEventListener('click', () => { local.depth = 2; render(); });
   panel.querySelector('[data-to1]').addEventListener('click', () => { local.depth = 1; render(); });
+  hdr.querySelector('[data-hback]').addEventListener('click', () => { local.depth = 1; render(); });
   panel.querySelectorAll('[data-acc-toggle]').forEach(b => b.addEventListener('click', () => {
     const k = b.closest('.acc').dataset.acc;
     local.expand = local.expand === k ? null : k; render();
@@ -1298,7 +2396,7 @@ function createMobile() {
     node, render,
     setPage() { page.innerHTML = pageHTML(state.page); scroller.scrollTop = 0; setMenu(false); },
     setView(view, opts = {}) {
-      scroller.scrollTop = view === 'scroll' ? SCROLL_Y : 0;
+      scroller.scrollTop = view === 'scroll' ? SCROLL_Y : peekY(view, opts);
       local.scrolled = scroller.scrollTop > 0;
       local.solid = !!opts.solid;
       // A has no separate search screen: its search field sits at the top of the menu panel
@@ -1312,6 +2410,10 @@ function createMobile() {
 
 /* ── Stage: desktop 1920 × 1080 and mobile 390 × 844, scaled to one shared height that fits ── */
 const SCROLL_Y = 400;
+// Set 08 · 09 float the same card over the hero and after scrolling, so a 헤더 colour is edited a little scrolled:
+// otherwise it would look like the 미디어 위 header changing
+const PEEK_Y = 120;
+const peekY = (view, opts) => view === 'default' && opts.solid && overlaps() && ['08', '09'].includes(state.desk) ? PEEK_Y : 0;
 const stage = document.getElementById('stage');
 const stageInner = document.getElementById('stageInner');
 const previews = document.getElementById('previews');
@@ -1340,12 +2442,22 @@ function setPageAll() { panes.forEach(p => { p.setPage(); p.setView(state.view);
 
 // preview state, driven by "컬러 수정 중인 화면 자동 보기"
 function setView(view, opts) {
-  if (opts && opts.tone && canOverlap() && mediaTone() !== opts.tone) {
+  if (opts && opts.tone && DESKS[state.desk].overlap && (!canOverlap() || mediaTone() !== opts.tone)) {
     state.page = 'home-' + opts.tone;
     if (mediaTone() !== opts.tone) state.tone[state.page] = 'auto';
     document.getElementById('page').value = state.page;
     panes.forEach(p => p.setPage());
     syncDisplay();
+  }
+  // Set 10 keeps the 헤더 겹침 colours at the top and after scrolling: its 헤더 colours only show on a sub page
+  if (opts && opts.solid && state.desk === '10') {
+    if (state.page !== 'sub') {
+      state.page = 'sub';
+      document.getElementById('page').value = state.page;
+      panes.forEach(p => p.setPage());
+      syncDisplay();
+    }
+    opts = { ...opts, solid: false };
   }
   state.view = view;
   panes.forEach(p => p.setView(view, opts));
@@ -1359,7 +2471,8 @@ function viewReleased() {
 /* ── Editor: colour items for the selected pairing ── */
 const itemsEl = document.getElementById('items');
 itemsEl.innerHTML = ITEMS.reduce((html, i) => {
-  if (i.group) return html + `${html ? '</div>' : ''}<div class="item-group ${i.cls || ''}" data-group="${ITEMS.indexOf(i)}"><h3>${i.group}</h3><p>${groupDesc(i)}</p>`;
+  if (i.group) return html + `${html ? '</div>' : ''}<div class="item-group ${i.cls || ''}" data-group="${ITEMS.indexOf(i)}"><h3>${i.group}</h3><p>${groupDesc(i)}</p>${i.cls === 'is-media'
+    ? '<div class="seg media-seg" id="mediaSeg" role="group" aria-label="미디어 톤"><button type="button" data-media="dark">어두운 미디어 위</button><button type="button" data-media="light">밝은 미디어 위</button></div>' : ''}`;
   if (i.divider) return html + '<hr class="cdivider">';
   if (i.sub) return html + `<p class="csub">${i.sub}</p>`;
   return html + `<div class="citem" data-key="${i.key}">
@@ -1368,6 +2481,15 @@ itemsEl.innerHTML = ITEMS.reduce((html, i) => {
     <span class="dev" hidden></span>
   </div>`;
 }, '') + '</div>';
+// 로고 컬러 (겹치기 off) sits at the bottom of 헤더, in its own outlined box
+itemsEl.querySelector(`.item-group[data-group="${ITEMS.findIndex(i => i.group === '헤더')}"]`).appendChild(document.getElementById('logoBox'));
+// 헤더 겹침: its sub headings and items go in one surface (painted by tone in C1)
+{
+  const g = itemsEl.querySelector('.item-group.is-media'), surface = document.createElement('div');
+  surface.className = 'media-surface';
+  g.querySelectorAll(':scope > .media-seg, :scope > .csub, :scope > .citem').forEach(el => surface.appendChild(el));
+  g.appendChild(surface);
+}
 
 // one tooltip per prototype: C1 points at 자동 보기, C2 at the screen toggle
 const coach = document.getElementById('autoShowTip');
@@ -1384,11 +2506,11 @@ function autoShow(key) {
   // C2 never changes the screen, but brings the picked one back (hovering or clicking the preview may have
   // closed it) in the item's detail state — e.g. 검색's 비어 있음 · 입력 중, the menu's 2depth.
   if (state.mode === 'screens') {
-    if (onScreen(item, state.screen)) setView(state.screen, item.view === state.screen ? item.opts || {} : {});
+    if (onScreen(item, state.screen)) setView(state.screen, itemView(item) === state.screen ? itemOpts(item) : {});
     return;
   }
   if (!document.getElementById('autoShow').checked) return;
-  setView(item.view, item.opts || {});
+  setView(itemView(item), itemOpts(item));
 }
 
 /* ── colour picker (HSV + alpha), opened from a swatch ── */
@@ -1398,6 +2520,40 @@ const cp = {
   hex: document.getElementById('cpHex'), pct: document.getElementById('cpPct'),
 };
 const clamp = (n, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, n));
+// A hover tint: the background moved toward the text colour in OKLab until it is a set step lighter / darker
+// (2.5% of screen brightness on light backgrounds, up to 5% on dark ones, where the eye sees less difference).
+// Mixing in OKLab keeps only a trace of the text's hue, so a blue text gives a faint blue-ish tint.
+function hoverTint(bgHex, textHex) {
+  const lin = v => (v /= 255) <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  const gam = v => Math.round(255 * Math.min(1, Math.max(0, v <= 0.0031308 ? 12.92 * v : 1.055 * v ** (1 / 2.4) - 0.055)));
+  const toLab = ({ r, g, b }) => {
+    [r, g, b] = [lin(r), lin(g), lin(b)];
+    const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+    const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+    const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+    const ab = v => Math.abs(v) < 0.002 ? 0 : v; // greys stay grey through the round trip
+    return [0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s, ab(1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s), ab(0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s)];
+  };
+  const toRgb = ([L, A, B]) => {
+    const l = (L + 0.3963377774 * A + 0.2158037573 * B) ** 3, m = (L - 0.1055613458 * A - 0.0638541728 * B) ** 3, s = (L - 0.0894841775 * A - 1.2914855480 * B) ** 3;
+    return [gam(4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s), gam(-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s), gam(-0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s)];
+  };
+  const bgc = hexToRgba(bgHex), bg = toLab(bgc);
+  let tx = toLab(hexToRgba(textHex));
+  // the step is measured on screen brightness (gamma-encoded luma): OKLab's L squeezes the darks together,
+  // so a step there all but vanishes on black
+  const luma = ([r, g, b]) => (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  const mix = t => toRgb(bg.map((v, i) => v + (tx[i] - v) * t));
+  const y0 = luma(toRgb(bg)), step = 0.025 + 0.025 * Math.min(1, Math.max(0, (0.8 - y0) / 0.6))
+    + 0.035 * Math.max(0, (0.1 - y0) / 0.1); // screens crush the last few shades above black: near-black gets up to 3.5% more
+  // text too close to the background to lean on: step toward black (light bg) or white (dark bg) instead
+  if (Math.abs(luma(mix(1)) - y0) < step * 1.5) tx = y0 > 0.5 ? toLab({ r: 0, g: 0, b: 0 }) : toLab({ r: 255, g: 255, b: 255 });
+  let lo = 0, hi = 0.6;
+  for (let n = 0; n < 24; n++) { const t = (lo + hi) / 2; Math.abs(luma(mix(t)) - y0) < step ? lo = t : hi = t; }
+  const t = hi;
+  const [r, g, b] = toRgb(bg.map((v, i) => v + (tx[i] - v) * t));
+  return `rgba(${r}, ${g}, ${b}, ${bgc.a})`;
+}
 function hexToRgba(hex) {
   let h = hex.slice(1);
   if (h.length === 3) h = [...h].map(c => c + c).join('');
@@ -1521,7 +2677,9 @@ function syncEditor() {
   const key = pairKey(), c = state.colors;
   itemsEl.querySelectorAll('.citem').forEach(row => {
     const item = ITEM[row.dataset.key], on = item.on[key];
-    row.hidden = !on || (state.mode === 'screens' && !onScreen(item, state.screen));
+    row.hidden = !on || (state.mode === 'screens' && !onScreen(item, state.screen))
+      // C1 shows the 헤더 겹침 colours of the tone picked in its toggle
+      || (state.mode === 'auto' && item.opts && item.opts.tone && item.opts.tone !== state.mediaSide);
     row.querySelector('label').firstChild.textContent = (item.labelBy && item.labelBy[state.set]) || item.label;
     row.querySelector('.swatch i').style.setProperty('--v', c[row.dataset.key]);
     const dev = row.querySelector('.dev');
@@ -1537,8 +2695,13 @@ function syncEditor() {
   itemsEl.querySelectorAll('.csub').forEach(h => {
     let has = false;
     for (let el = h.nextElementSibling; el && el.classList.contains('citem'); el = el.nextElementSibling) if (!el.hidden) has = true;
-    h.hidden = !has;
+    h.hidden = !has || (state.mode === 'auto' && !!h.closest('.is-media'));
   });
+  const mediaSeg = document.getElementById('mediaSeg');
+  mediaSeg.hidden = state.mode !== 'auto';
+  mediaSeg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.media === state.mediaSide)));
+  const surface = itemsEl.querySelector('.media-surface');
+  if (state.mode === 'auto') surface.dataset.tone = state.mediaSide; else delete surface.dataset.tone;
   // the 검색창 / 검색 결과 line only while both sides have items
   itemsEl.querySelectorAll('.cdivider').forEach(hr => {
     const has = dir => { for (let el = hr[dir]; el; el = el[dir]) if (!el.hidden) return true; return false; };
@@ -1549,6 +2712,7 @@ function syncEditor() {
   document.getElementById('screenSeg').hidden = !screens;
   document.querySelectorAll('#screenSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.screen === state.screen)));
   document.querySelectorAll('.version-switch button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode)));
+  document.body.dataset.mode = state.mode;
   for (const [key, bk] of Object.entries(BLUR)) {
     const tag = itemsEl.querySelector(`[data-key="${key}"] .tag`);
     tag.hidden = !c[bk.on];
@@ -1556,6 +2720,15 @@ function syncEditor() {
   }
   document.querySelectorAll('#logoSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.logo === state.logo)));
 }
+
+document.getElementById('mediaSeg').addEventListener('click', e => {
+  const b = e.target.closest('button[data-media]');
+  if (!b || b.dataset.media === state.mediaSide) return;
+  state.mediaSide = b.dataset.media;
+  closePicker(); syncEditor();
+  // show the preview over that tone of media, like editing one of its colours does
+  if (document.getElementById('autoShow').checked) setView('default', { tone: state.mediaSide });
+});
 
 document.getElementById('logoSeg').addEventListener('click', e => {
   const b = e.target.closest('button');
@@ -1568,7 +2741,8 @@ document.getElementById('logoSeg').addEventListener('click', e => {
 const dialog = document.getElementById('designDialog');
 const setsEl = document.getElementById('sets');
 let pendingSet = pairKey();
-setsEl.innerHTML = Object.entries(DESKS).map(([d, desk]) => `<section class="set-group"><h3>${desk.name}${desk.overlap ? ' · 헤더 겹치기 가능' : ''}</h3><div class="sets">${
+// '11' is an integer-like key, so object order would put it first: sort the desks by name
+setsEl.innerHTML = Object.entries(DESKS).sort(([a], [b]) => a.localeCompare(b)).map(([d, desk]) => `<section class="set-group"><h3>${desk.name}${desk.overlap ? ' · 헤더 겹치기 가능' : ''}</h3><div class="sets">${
   Object.entries(PAIRS[d]).map(([k, p]) => `
   <button type="button" class="set" data-set="${d + k}" aria-pressed="false">
     <div class="set-thumb"><i></i><i></i><b></b><i class="r"></i></div>
@@ -1591,7 +2765,9 @@ document.getElementById('openDesigns').addEventListener('click', () => {
 });
 dialog.addEventListener('close', () => {
   if (dialog.returnValue !== 'apply' || pendingSet === pairKey()) return;
+  const from = state.desk;
   state.desk = pendingSet.slice(0, 2); state.set = pendingSet.slice(2);
+  swapMediaDefaults(from, state.desk);
   closePicker(); syncEditor(); syncDisplay();
   setView(state.mode === 'screens' ? state.screen : 'default');
 });
