@@ -260,6 +260,18 @@
   .cp-field input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; padding: 0; font: inherit; color: #333e4c; text-transform: uppercase; }
   .cp-field input.pct { width: 26px; text-align: right; }
   .cp-field input[aria-invalid="true"] { color: #dc2626; }
+  /* 색상 세트: preset colours that work together, one row per set */
+  .cp-sets { padding: 14px 16px 16px; border-top: 1px solid rgba(51,62,76,.08); margin-top: -2px; }
+  .cp-sets-title { margin: 0 0 8px; font: 500 12px/18px Pretendard, sans-serif; color: #333e4c; }
+  .cp-set { display: flex; align-items: center; gap: 4px; }
+  .cp-set + .cp-set { margin-top: 6px; }
+  .cp-chip {
+    flex: 1 1 0; min-width: 0; max-width: 22px; aspect-ratio: 1; padding: 0; border-radius: 4px; cursor: pointer; background: var(--c);
+    border: 1px solid rgba(51,62,76,.12); position: relative;
+  }
+  .cp-chip:hover { transform: scale(1.08); }
+  .cp-chip:focus-visible { outline: 2px solid #1b4efe; outline-offset: 1px; }
+  .cp-chip[aria-pressed="true"] { box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px #1b4efe; }
   .cp-blur { padding: 0 16px 16px; border-top: 1px solid rgba(51,62,76,.08); margin-top: -2px; padding-top: 14px; }
   .cp-blur[hidden] { display: none; }
   .cp-blur-head { display: flex; align-items: center; justify-content: space-between; font: 500 12px/18px Pretendard, sans-serif; color: #333e4c; }
@@ -1833,6 +1845,10 @@
       <label><input id="cpPct" class="pct" inputmode="numeric" maxlength="3" aria-label="불투명도"> %</label>
     </div>
   </div>
+  <div class="cp-sets">
+    <p class="cp-sets-title" id="cpSetsTitle">색상 세트</p>
+    <div id="cpSets" role="group" aria-labelledby="cpSetsTitle"></div>
+  </div>
   <div class="cp-blur" id="cpBlur" hidden>
     <div class="cp-blur-head">
       <label for="cpBlurOn">배경 블러</label>
@@ -2587,6 +2603,7 @@ function cpPaint(skip) {
   ah.style.left = cp.a * 100 + '%'; ah.style.setProperty('--c', solid);
   if (skip !== cp.hex) { cp.hex.value = solid.slice(1).toUpperCase(); cp.hex.removeAttribute('aria-invalid'); }
   if (skip !== cp.pct) cp.pct.value = Math.round(cp.a * 100);
+  cpSetsEl.querySelectorAll('.cp-chip').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.c === solid)));
   const blur = document.getElementById('cpBlur');
   const bk = BLUR[cp.key];
   blur.hidden = !bk;
@@ -2600,6 +2617,21 @@ function cpPaint(skip) {
     document.getElementById('cpBlurOut').textContent = v + 'px';
   }
 }
+// 색상 세트 (same as editor D): each set runs light → dark in one family, so its first colours sit well as 배경 and its last as 텍스트·아이콘
+const COLOR_SETS = [
+  { name: '웜 뉴트럴', colors: ['#faf8f3', '#f4f0e8', '#e8e2d7', '#d9d2c5', '#b3a795', '#8a7b6a', '#5f5345', '#3b342c', '#1c1a17'] },
+];
+const cpSetsEl = document.getElementById('cpSets');
+cpSetsEl.innerHTML = COLOR_SETS.map(set => `<div class="cp-set">${
+  set.colors.map(c => `<button type="button" class="cp-chip" data-c="${c}" style="--c:${c}" title="${c.toUpperCase()}" aria-label="${set.name} ${c.toUpperCase()}" aria-pressed="false"></button>`).join('')}</div>`).join('');
+cpSetsEl.addEventListener('click', e => {
+  const b = e.target.closest('.cp-chip');
+  if (!b) return;
+  // keep the opacity already set, unless the colour is fully transparent (then the pick would not show)
+  Object.assign(cp, rgbToHsv(hexToRgba(b.dataset.c)));
+  if (cp.a === 0) cp.a = 1;
+  cpCommit();
+});
 function cpCommit(skip) {
   cp.obj[cp.key] = cpValue();
   cpPaint(skip); syncEditor(); renderAll();
